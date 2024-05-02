@@ -16,7 +16,7 @@ function addBase(obj, x, y, z) {
 	obj.add(mesh);
 }
 
-function addTower(obj, x, y, z) {
+function addTorre(obj, x, y, z) {
 	'use strict';
 	geometry = new THREE.BoxGeometry(20, 300, 20);
 	mesh = new THREE.Mesh(geometry, material);
@@ -24,11 +24,114 @@ function addTower(obj, x, y, z) {
 	obj.add(mesh);
 }
 
+function addPortalanca(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(20, 60, 20);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x, y+30, z);
+	obj.add(mesh);
+}
+
+function addContralanca(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(80, 20, 30);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x-30, y+10, z);
+	obj.add(mesh);
+}
+
+function addTirantes(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.CylinderGeometry(2, 2, 30);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.rotation.z = Math.PI / 4;
+	mesh.position.set(x+20, y+30, z);
+	obj.add(mesh);
+	geometry = new THREE.CylinderGeometry(2, 2, 30);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.rotation.z = -Math.PI / 4;
+	mesh.position.set(x-20, y+30, z);
+	obj.add(mesh);
+}
+
+function addCarrinho(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(30, 10, 30);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x+100, y-5, z);
+	obj.add(mesh);
+	addCabo(obj, x+100, y-10, z);
+}
+
+function addCabo(obj, x, y, z) {
+	'use strict';
+	var len = 100;
+	geometry = new THREE.CylinderGeometry(2, 2, len); 
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x, y-(len/2), z);
+	obj.add(mesh);
+	addBloco(obj, x, y-len, z);
+}
+
+function addDedo(obj, x, y, z, angle) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(2, 10, 2);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x, y-5, z);
+	mesh.rotation.y = angle;
+	obj.add(mesh);
+	geometry = new THREE.BoxGeometry(2, 20, 2);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.rotation.z = Math.PI/4; // grau de liberdade
+	mesh.position.set(x, y-10, z);
+	mesh.rotation.y = angle;
+	obj.add(mesh);
+}
+
+function addBloco(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(30, 10, 30);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x, y-5, z);
+	obj.add(mesh);
+	addDedo(obj, x-10, y-10, z-10, -Math.PI/4);
+	addDedo(obj, x-10, y-10, z+10, Math.PI/4);
+	addDedo(obj, x+10, y-10, z-10, 5*Math.PI/4);
+	addDedo(obj, x+10, y-10, z+10, 3*Math.PI/4);
+}
+
+function addGancho(obj, x, y, z) {
+	'use strict';
+	addCarrinho(obj, x, y, z);
+}
+
+function addLanca(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(200, 20, 30);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x+110, y+10, z);
+	obj.add(mesh);
+	addGancho(obj, x+60, y, z); // grau de liberdade
+}
+
+function addTopo(obj, x, y, z) {
+	'use strict';
+	addPortalanca(obj, x, y, z);
+	addContralanca(obj, x, y, z);
+	addTirantes(obj, x, y, z);
+	addLanca(obj, x, y, z);
+}
+
 function addCrane(obj, x, y, z) {
 	'use strict';
+	var topo = new THREE.Object3D();
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 
 	addBase(obj, 0, 10, 0);
-	addTower(obj, 0, 170, 0);
+	addTorre(obj, 0, 170, 0);
+	addTopo(topo, 0, 320, 0);
+	topo.rotation.y = 0; // grau de liberdade
+	obj.add(topo);
 }
 
 function createCrane(x, y, z) {
@@ -56,7 +159,7 @@ function createScene() {
 function createCameras() {
 
     const aspectRatio = window.innerWidth / window.innerHeight; 
-    const frustumSize = 1000;
+    const frustumSize = 400;
 
     // Camera 1: Front View
     const orthographicCameraFront = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
@@ -87,30 +190,6 @@ function createCameras() {
     cameras.push(orthographicCameraFront, orthographicCameraSide, orthographicCameraTop, isometricCameraOrtho, isometricCameraPersp);
 }
 
-/* IMAGENS PARA TESTAR CAMARAS */
-function teste() {
-    // Create a cube
-    const cubeGeometry = new THREE.BoxGeometry(100, 100, 100);
-    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // green color
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube.position.set(-150, 0, 0);
-    scene.add(cube);
-
-    // Create a sphere
-    const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
-    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // red color
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(150, 0, 0);
-    scene.add(sphere);
-
-    // Create a cylinder
-    const cylinderGeometry = new THREE.CylinderGeometry(50, 50, 200, 32);
-    const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // blue color
-    const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-    cylinder.position.set(0, 0, -150);
-    scene.add(cylinder);
-}
-
 /* RENDER */
 function render() {
     renderer.render(scene, camera);
@@ -118,10 +197,8 @@ function render() {
 
 /* ANIMATION CYCLE */
 function animate() {
-
     requestAnimationFrame(animate);
     render();
-
 }
 
 /* INITIALIZATION */
@@ -131,7 +208,8 @@ function init() {
     createCameras();
     camera = cameras[0];
 
-    createCrane(0, 0, 0);
+    createCrane(0, -200, 0);
+	/* FIXME o y está a -150 pq queria ver a grua centrada, mas isto acho que devia ser resolvido na parte das camaras, não aqui */
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
