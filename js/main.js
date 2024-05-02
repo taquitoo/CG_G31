@@ -6,11 +6,50 @@ import * as THREE from 'three';
 var scene, renderer, camera;
 var cameras = [];
 
+var geometry, material, mesh;
+
+function addBase(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(40, 20, 40);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x, y, z);
+	obj.add(mesh);
+}
+
+function addTower(obj, x, y, z) {
+	'use strict';
+	geometry = new THREE.BoxGeometry(20, 300, 20);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x, y, z);
+	obj.add(mesh);
+}
+
+function addCrane(obj, x, y, z) {
+	'use strict';
+
+	addBase(obj, 0, 10, 0);
+	addTower(obj, 0, 170, 0);
+}
+
+function createCrane(x, y, z) {
+	'use strict';
+
+	var crane = new THREE.Object3D();
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+
+	addCrane(crane, x, y, z);
+	scene.add(crane);
+
+    crane.position.x = x;
+    crane.position.y = y;
+    crane.position.z = z;
+}
+
 /* CREATE SCENE */
 function createScene() {
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
+    scene.background = new THREE.Color(0xA3D8FF);
 }
 
 /* CREATE CAMERAS */
@@ -92,7 +131,7 @@ function init() {
     createCameras();
     camera = cameras[0];
 
-    teste();
+    createCrane(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
