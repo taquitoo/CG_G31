@@ -323,13 +323,13 @@ function createCameras() {
     orthographicCameraTop.lookAt(scene.position);
 
     // Camera 4: Isometric perspective, orthogonal projection
-    const isometricCameraOrtho = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
+    const isometricCameraOrtho = new THREE.OrthographicCamera(-frustumSize, frustumSize, frustumSize, -frustumSize, 1, 2000);
     isometricCameraOrtho.position.set(800, 800, 800);
     isometricCameraOrtho.lookAt(scene.position);
 
     // Camera 5: Isometric perspective, perspective projection
-    const isometricCameraPersp = new THREE.PerspectiveCamera(90, aspectRatio, 1, 2000);
-    isometricCameraPersp.position.set(800, 800, 800);;
+    const isometricCameraPersp = new THREE.PerspectiveCamera(60, aspectRatio, 1, 2000);
+    isometricCameraPersp.position.set(800, 800, 800);
     isometricCameraPersp.lookAt(scene.position);
 
     // Collect all cameras
