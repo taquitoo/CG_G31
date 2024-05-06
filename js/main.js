@@ -265,7 +265,6 @@ function addCrane(obj, x, y, z) {
 	addBase(obj, 0, 10, 0);
 	addTorre(obj, 0, 170, 0);
 	addTopo(topo, 0, 320, 0);
-	topo.rotation.y = 0;
 	obj.add(topo);
 }
 
