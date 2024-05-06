@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { max, varyingProperty } from 'three/examples/jsm/nodes/Nodes.js';
 
+//////////////////////
 /* GLOBAL VARIABLES */
+//////////////////////
 var scene, renderer, camera;
 var cameras = [];
 var existingLoads = [];
@@ -27,11 +29,14 @@ var minBlocoY, maxBlocoY;
 var maxDedoRotation = Math.PI / 2;
 var minDedoRotation = 0;
 
+//////////////////
+/* CREATE LOADS */
+//////////////////
 function generateRandomPosition(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-// Função para verificar se duas caixas estão intercetadas
+// Verifies if two boxes intersect
 function boxesIntersect(box1, box2) {
     return (box1.min.x < box2.max.x && box1.max.x > box2.min.x) &&
            (box1.min.y < box2.max.y && box1.max.y > box2.min.y) &&
@@ -39,16 +44,16 @@ function boxesIntersect(box1, box2) {
 }
 
 function createRandomLoad(scene, container, crane, containerWidth, containerLength) {
-    // Dimensões aleatórias da carga (inferiores às do contentor)
+    // Random dimensions smaller than the container
     var loadWidth = Math.max(Math.random() * containerWidth / 2, 10);
     var loadLength = Math.max(Math.random() * containerLength / 2, 10);
     var loadHeight = Math.max(Math.random() * containerWidth / 2, 10);
 
-    // Posição aleatória fora do contentor
+    // Random position outside the container
     var loadX = generateRandomPosition(-containerWidth, containerWidth);
     var loadZ = generateRandomPosition(-containerLength, containerLength);
 
-    // Criar carga
+    // Create load
     var polyhedronTypes = ['box', 'dodecahedron', 'icosahedron', 'torus', 'torusknot'];
     var polyhedronType = polyhedronTypes[Math.floor(Math.random() * polyhedronTypes.length)];
 
@@ -77,7 +82,7 @@ function createRandomLoad(scene, container, crane, containerWidth, containerLeng
     var loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
     loadMesh.position.set(loadX, -200, loadZ);
 
-    // Verificar se a carga intersecta com as peças existentes
+    // Verifie if the load intersects with the existing loads
     var loadBox = new THREE.Box3().setFromObject(loadMesh);
     for (var i = 0; i < existingLoads.length; i++) {
         var existingLoadBox = new THREE.Box3().setFromObject(existingLoads[i]);
@@ -87,17 +92,17 @@ function createRandomLoad(scene, container, crane, containerWidth, containerLeng
         }
     }   
 
-    // Verificar se a carga intersecta com o contentor
+    // Verifie if the load intersects with the container
     var containerBox = new THREE.Box3().setFromObject(container);
     if (boxesIntersect(loadBox, containerBox)) {
         // Se houver interseção com o contentor, tentar novamente
         return createRandomLoad(scene, container, crane, containerWidth, containerLength);
     } 
 
-	// Verificar se a carga intersecta com a grua
+    // Verifie if the load intersects with the crane
 	var craneBox = new THREE.Box3().setFromObject(crane);
 	if (boxesIntersect(loadBox, craneBox)) {
-        // Se houver interseção com a grua, tentar novamente
+        // If there is an intersection with the crane, try again
         return createRandomLoad(scene, container, crane, containerWidth, containerLength);
     }
 	existingLoads.push(loadMesh);
@@ -110,6 +115,9 @@ function createRandomLoads(scene, container, crane, containerWidth, containerLen
     }
 }
 
+//////////////////////
+/* CREATE CONTAINER */
+//////////////////////
 function addContainerBase(obj, x, y, z) {
     geometry = new THREE.BoxGeometry(100, 1, 50);
     mesh = new THREE.Mesh(geometry, material);
@@ -154,6 +162,9 @@ function createContainer(x, y, z) {
     return container;
 }
 
+///////////////////
+/* CREATE CRANE */
+//////////////////
 function addBase(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(40, 20, 40);
 	mesh = new THREE.Mesh(geometry, material);
@@ -247,7 +258,7 @@ function addBloco(obj, x, y, z) {
 	addDedo(obj, x+10, y-10, z-10, 5*Math.PI/4);
 	addDedo(obj, x+10, y-10, z+10, 3*Math.PI/4);
 
-    // Câmara Móvel no Gancho
+    // Mobile Camera
     var ganchoCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
     ganchoCamera.position.set(x, y, z);
     ganchoCamera.lookAt(new THREE.Vector3(x, 0, z));
@@ -301,14 +312,18 @@ function createCrane(x, y, z) {
 	return crane;
 }
 
+///////////////////
 /* CREATE SCENE */
+//////////////////
 function createScene() {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xA3D8FF);
 }
 
+/////////////////////
 /* CREATE CAMERAS */
+/////////////////////
 function createCameras() {
 
     const aspectRatio = window.innerWidth / window.innerHeight; 
@@ -343,7 +358,9 @@ function createCameras() {
     cameras.push(orthographicCameraFront, orthographicCameraSide, orthographicCameraTop, isometricCameraOrtho, isometricCameraPersp);
 }
 
+/////////////
 /* UPDATE */
+////////////
 function update() {
 
     if(keys['q'] && topo.rotation.y < maxTopoRotation){
@@ -383,20 +400,24 @@ function update() {
         });
     });
 }
-
+////////////
 /* RENDER */
+////////////
 function render() {
     renderer.render(scene, camera);
 }
 
+/////////////////////
 /* ANIMATION CYCLE */
+/////////////////////
 function animate() {
     requestAnimationFrame(animate);
     update();
     render();
 }
-
+////////////////////
 /* INITIALIZATION */
+////////////////////
 function init() {
 
     createScene();
@@ -421,8 +442,9 @@ function init() {
     render();
     animate();
 }
-
+///////////////////////
 /* KEYBOARD CALLBACK */
+///////////////////////
 function onKeyDown(e) {
     e.preventDefault();
     keys[e.key.toLowerCase()] = true;
