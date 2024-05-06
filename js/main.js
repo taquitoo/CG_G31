@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { varyingProperty } from 'three/examples/jsm/nodes/Nodes.js';
+import { max, varyingProperty } from 'three/examples/jsm/nodes/Nodes.js';
 
 /* GLOBAL VARIABLES */
 var scene, renderer, camera;
@@ -14,7 +14,15 @@ var topo;
 var carrinho;
 var bloco;
 
+var maxRotation = 0;
+var minRotation = - Math.PI / 2;
 var rotationSpeed = Math.PI / 180;
+
+var minCarrinhoX = -135;
+var maxCarrinhoX = 0;
+
+var minBlocoY = 0;
+var maxBlocoY = 100;
 
 function generateRandomPosition(min, max) {
     return Math.random() * (max - min) + min;
@@ -320,16 +328,29 @@ function createCameras() {
 
 /* UPDATE */
 function update() {
-    if (keys['a'] || keys['q']) {
-        topo.rotation.y += (keys['a'] ? rotationSpeed : 0) - (keys['q'] ? rotationSpeed : 0);
+
+    if(keys['q'] && topo.rotation.y < maxRotation){
+        topo.rotation.y += rotationSpeed;
     }
 
-    if (keys['w'] || keys['s']) {
-        carrinho.position.x += (keys['w'] ? 1 : 0) - (keys['s'] ? 1 : 0);
+    if(keys['a'] && topo.rotation.y > minRotation){
+        topo.rotation.y -= rotationSpeed;
     }
 
-    if(keys['e'] || keys['d']) {
-        bloco.position.y += (keys['e'] ? 1 : 0) - (keys['d'] ? 1 : 0);
+    if(keys['w'] && carrinho.position.x < maxCarrinhoX){
+        carrinho.position.x += 1;
+    }
+
+    if(keys['s'] && carrinho.position.x > minCarrinhoX){
+        carrinho.position.x -= 1;
+    }
+
+    if(keys['e'] && bloco.position.y < maxBlocoY){
+        bloco.position.y += 1;
+    }
+
+    if(keys['d'] && bloco.position.y > minBlocoY){  
+        bloco.position.y -= 1;
     }
 }
 
