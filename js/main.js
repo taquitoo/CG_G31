@@ -1,13 +1,20 @@
 import * as THREE from 'three';
-
-'use strict';
+import { varyingProperty } from 'three/examples/jsm/nodes/Nodes.js';
 
 /* GLOBAL VARIABLES */
 var scene, renderer, camera;
 var cameras = [];
 var existingLoads = [];
 
+var keys = {};
+
 var geometry, material, mesh;
+
+var topo;
+var carrinho;
+var bloco;
+
+var rotationSpeed = Math.PI / 180;
 
 function generateRandomPosition(min, max) {
     return Math.random() * (max - min) + min;
@@ -93,7 +100,6 @@ function createRandomLoads(scene, container, crane, containerWidth, containerLen
 }
 
 function addContainerBase(obj, x, y, z) {
-    'use strict';
     geometry = new THREE.BoxGeometry(100, 1, 50);
     mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
@@ -101,7 +107,6 @@ function addContainerBase(obj, x, y, z) {
 }
 
 function addContainerWall1(obj, x, y, z) {
-    'use strict';
     geometry = new THREE.BoxGeometry(100, 30, 1);
     mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
@@ -109,7 +114,6 @@ function addContainerWall1(obj, x, y, z) {
 }
 
 function addContainerWall2(obj, x, y, z) {
-    'use strict';
     geometry = new THREE.BoxGeometry(50, 30, 1);
     mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
@@ -118,15 +122,14 @@ function addContainerWall2(obj, x, y, z) {
 }
 
 function addContainer(obj, x, y, z) {
-    'use strict';
     addContainerBase(obj, x, y, z);
     addContainerWall1(obj, x, y + 2.5 , z + 25);
     addContainerWall1(obj, x, y + 2.5 , z - 25);
     addContainerWall2(obj, x+50, y + 2.5 , z);
     addContainerWall2(obj, x-50, y + 2.5 , z);
 }
+
 function createContainer(x, y, z) {
-    'use strict';
 
     var container = new THREE.Object3D();
     material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true});
@@ -141,7 +144,6 @@ function createContainer(x, y, z) {
 }
 
 function addBase(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(40, 20, 40);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
@@ -149,7 +151,6 @@ function addBase(obj, x, y, z) {
 }
 
 function addTorre(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(20, 300, 20);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
@@ -157,7 +158,6 @@ function addTorre(obj, x, y, z) {
 }
 
 function addPortalanca(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(20, 60, 20);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y+30, z);
@@ -165,7 +165,6 @@ function addPortalanca(obj, x, y, z) {
 }
 
 function addContralanca(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(80, 20, 30);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x-30, y+10, z);
@@ -173,7 +172,6 @@ function addContralanca(obj, x, y, z) {
 }
 
 function addTirantes(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.CylinderGeometry(2, 2, 30);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.rotation.z = Math.PI / 4;
@@ -187,7 +185,6 @@ function addTirantes(obj, x, y, z) {
 }
 
 function addCarrinho(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(30, 10, 30);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x+100, y-5, z);
@@ -196,17 +193,18 @@ function addCarrinho(obj, x, y, z) {
 }
 
 function addCabo(obj, x, y, z) {
-	'use strict';
 	var len = 100;
 	geometry = new THREE.CylinderGeometry(2, 2, len); 
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y-(len/2), z);
 	obj.add(mesh);
-	addBloco(obj, x, y-len, z);
+
+    bloco = new THREE.Object3D();
+	addBloco(bloco, x, y-len, z);
+    obj.add(bloco);
 }
 
 function addDedo(obj, x, y, z, angle) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(2, 10, 2);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y-5, z);
@@ -221,7 +219,6 @@ function addDedo(obj, x, y, z, angle) {
 }
 
 function addBloco(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(30, 10, 30);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y-5, z);
@@ -233,21 +230,20 @@ function addBloco(obj, x, y, z) {
 }
 
 function addGancho(obj, x, y, z) {
-	'use strict';
-	addCarrinho(obj, x, y, z);
+    carrinho = new THREE.Object3D();
+	addCarrinho(carrinho, x, y, z);
+    obj.add(carrinho);
 }
 
 function addLanca(obj, x, y, z) {
-	'use strict';
 	geometry = new THREE.BoxGeometry(200, 20, 30);
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x+110, y+10, z);
 	obj.add(mesh);
-	addGancho(obj, x+60, y, z); // grau de liberdade
+	addGancho(obj, x+60, y, z);
 }
 
 function addTopo(obj, x, y, z) {
-	'use strict';
 	addPortalanca(obj, x, y, z);
 	addContralanca(obj, x, y, z);
 	addTirantes(obj, x, y, z);
@@ -255,19 +251,17 @@ function addTopo(obj, x, y, z) {
 }
 
 function addCrane(obj, x, y, z) {
-	'use strict';
-	var topo = new THREE.Object3D();
+	topo = new THREE.Object3D();
     material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 
 	addBase(obj, 0, 10, 0);
 	addTorre(obj, 0, 170, 0);
 	addTopo(topo, 0, 320, 0);
-	topo.rotation.y = 0; // grau de liberdade
+	topo.rotation.y = 0;
 	obj.add(topo);
 }
 
 function createCrane(x, y, z) {
-	'use strict';
 
 	var crane = new THREE.Object3D();
     material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
@@ -324,6 +318,21 @@ function createCameras() {
     cameras.push(orthographicCameraFront, orthographicCameraSide, orthographicCameraTop, isometricCameraOrtho, isometricCameraPersp);
 }
 
+/* UPDATE */
+function update() {
+    if (keys['a'] || keys['q']) {
+        topo.rotation.y += (keys['a'] ? rotationSpeed : 0) - (keys['q'] ? rotationSpeed : 0);
+    }
+
+    if (keys['w'] || keys['s']) {
+        carrinho.position.x += (keys['w'] ? 1 : 0) - (keys['s'] ? 1 : 0);
+    }
+
+    if(keys['e'] || keys['d']) {
+        bloco.position.y += (keys['e'] ? 1 : 0) - (keys['d'] ? 1 : 0);
+    }
+}
+
 /* RENDER */
 function render() {
     renderer.render(scene, camera);
@@ -332,6 +341,7 @@ function render() {
 /* ANIMATION CYCLE */
 function animate() {
     requestAnimationFrame(animate);
+    update();
     render();
 }
 
@@ -355,6 +365,7 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
 
     render();
     animate();
@@ -363,7 +374,7 @@ function init() {
 /* KEYBOARD CALLBACK */
 function onKeyDown(e) {
     e.preventDefault();
-    console.log("Key pressed:", e.key);
+    keys[e.key.toLowerCase()] = true;
 
     switch (e.key) {
         case '1':
@@ -382,6 +393,11 @@ function onKeyDown(e) {
             camera = cameras[4];
             break;
     }
+}
+
+function onKeyUp(e) {
+    e.preventDefault();
+    keys[e.key.toLowerCase()] = false;
 }
 
 init();
