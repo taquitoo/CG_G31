@@ -80,7 +80,7 @@ function createRandomLoad(scene, container, crane, containerWidth, containerLeng
 	var craneBox = new THREE.Box3().setFromObject(crane);
 	if (boxesIntersect(loadBox, craneBox)) {
         // Se houver interseção com a grua, tentar novamente
-        createRandomLoad(scene, container, crane, containerWidth, containerLength);
+        return createRandomLoad(scene, container, crane, containerWidth, containerLength);
     }
 	existingLoads.push(loadMesh);
     scene.add(loadMesh);
@@ -344,7 +344,8 @@ function init() {
 
     var crane = createCrane(0, -200, 0);
 	/* FIXME o y está a -150 pq queria ver a grua centrada, mas isto acho que devia ser resolvido na parte das camaras, não aqui */
-	var container = createContainer(-50, -200, -100);
+	var container = createContainer(50, 0, 0);
+	crane.add(container);
     createRandomLoads(scene, container, crane, 50, 100, 5);
 
     renderer = new THREE.WebGLRenderer({
