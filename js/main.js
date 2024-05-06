@@ -400,6 +400,7 @@ function update() {
         });
     });
 }
+
 ////////////
 /* RENDER */
 ////////////
@@ -415,6 +416,7 @@ function animate() {
     update();
     render();
 }
+
 ////////////////////
 /* INITIALIZATION */
 ////////////////////
@@ -442,6 +444,7 @@ function init() {
     render();
     animate();
 }
+
 ///////////////////////
 /* KEYBOARD CALLBACK */
 ///////////////////////
