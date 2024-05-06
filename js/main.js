@@ -246,13 +246,20 @@ function addBloco(obj, x, y, z) {
 	addDedo(obj, x-10, y-10, z+10, Math.PI/4);
 	addDedo(obj, x+10, y-10, z-10, 5*Math.PI/4);
 	addDedo(obj, x+10, y-10, z+10, 3*Math.PI/4);
+
+    // Câmara Móvel no Gancho
+    var ganchoCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    ganchoCamera.position.set(x, y, z);
+    ganchoCamera.lookAt(new THREE.Vector3(x, 0, z));
+    cameras[5] = ganchoCamera;
 }
 
 function addGancho(obj, x, y, z) {
     carrinho = new THREE.Object3D();
-	addCarrinho(carrinho, x, y, z);
+    addCarrinho(carrinho, x, y, z);
     obj.add(carrinho);
 }
+
 
 function addLanca(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(200, 20, 30);
@@ -435,6 +442,10 @@ function onKeyDown(e) {
             break;
         case '5':
             camera = cameras[4];
+            break;
+        
+        case '6':
+            camera = cameras[5];
             break;
     }
 }
