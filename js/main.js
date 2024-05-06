@@ -13,15 +13,19 @@ var geometry, material, mesh;
 var topo;
 var carrinho;
 var bloco;
+var dedoSuperior, dedoInferior, pivot;
 
-var maxRotation = 0;
-var minRotation = - Math.PI / 2;
+var maxTopoRotation = 0;
+var minTopoRotation = - Math.PI / 2;
 var rotationSpeed = Math.PI / 180;
 
 var minCarrinhoX = -135;
 var maxCarrinhoX = 0;
 
 var minBlocoY, maxBlocoY;
+
+var maxDedoRotation = Math.PI / 2;
+var minDedoRotation = 0;
 
 function generateRandomPosition(min, max) {
     return Math.random() * (max - min) + min;
@@ -214,18 +218,24 @@ function addCabo(obj, x, y, z) {
 }
 
 function addDedo(obj, x, y, z, angle) {
-	geometry = new THREE.BoxGeometry(2, 10, 2);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y-5, z);
-	mesh.rotation.y = angle;
-	obj.add(mesh);
-	geometry = new THREE.BoxGeometry(2, 20, 2);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.rotation.z = Math.PI/4; // grau de liberdade
-	mesh.position.set(x, y-10, z);
-	mesh.rotation.y = angle;
-	obj.add(mesh);
+
+    geometry = new THREE.BoxGeometry(2, 10, 2);
+    dedoSuperior = new THREE.Mesh(geometry, material);
+    dedoSuperior.position.set(x, y - 5, z);
+    dedoSuperior.rotation.y = angle;
+
+    geometry = new THREE.BoxGeometry(2, 10, 2);
+    dedoInferior = new THREE.Mesh(geometry, material);
+    
+    pivot = new THREE.Object3D();
+    pivot.position.set(0, -5, 0);
+    dedoInferior.position.set(0, -5, 0);
+
+    pivot.add(dedoInferior);
+    dedoSuperior.add(pivot);
+    obj.add(dedoSuperior);
 }
+
 
 function addBloco(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(30, 10, 30);
@@ -329,11 +339,11 @@ function createCameras() {
 /* UPDATE */
 function update() {
 
-    if(keys['q'] && topo.rotation.y < maxRotation){
+    if(keys['q'] && topo.rotation.y < maxTopoRotation){
         topo.rotation.y += rotationSpeed;
     }
 
-    if(keys['a'] && topo.rotation.y > minRotation){
+    if(keys['a'] && topo.rotation.y > minTopoRotation){
         topo.rotation.y -= rotationSpeed;
     }
 
@@ -352,6 +362,19 @@ function update() {
     if(keys['d'] && bloco.position.y > minBlocoY){  
         bloco.position.y -= 1;
     }
+
+    bloco.children.forEach(function(dedoSuperior) {
+        dedoSuperior.children.forEach(function(pivot) {
+            pivot.children.forEach(function(dedoInferior) {
+                if (keys['r'] && pivot.rotation.z < maxDedoRotation) {
+                    pivot.rotation.z += 0.05;
+                }
+                if (keys['f'] && pivot.rotation.z > minDedoRotation) {
+                    pivot.rotation.z -= 0.05;
+                }
+            });
+        });
+    });
 }
 
 /* RENDER */
