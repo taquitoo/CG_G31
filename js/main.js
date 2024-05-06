@@ -21,8 +21,7 @@ var rotationSpeed = Math.PI / 180;
 var minCarrinhoX = -135;
 var maxCarrinhoX = 0;
 
-var minBlocoY = 0;
-var maxBlocoY = 100;
+var minBlocoY, maxBlocoY;
 
 function generateRandomPosition(min, max) {
     return Math.random() * (max - min) + min;
@@ -201,7 +200,9 @@ function addCarrinho(obj, x, y, z) {
 }
 
 function addCabo(obj, x, y, z) {
-	var len = 100;
+	var len = 250;
+    minBlocoY = 0;
+    maxBlocoY = len;
 	geometry = new THREE.CylinderGeometry(2, 2, len); 
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y-(len/2), z);
@@ -373,8 +374,8 @@ function init() {
     camera = cameras[0];
 
     var crane = createCrane(0, -200, 0);
-	/* FIXME o y está a -150 pq queria ver a grua centrada, mas isto acho que devia ser resolvido na parte das camaras, não aqui */
-	var container = createContainer(50, 0, 0);
+	
+	var container = createContainer(80, 0, 0);
 	crane.add(container);
     createRandomLoads(scene, container, crane, 50, 100, 5);
 
