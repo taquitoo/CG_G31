@@ -20,11 +20,11 @@ function boxesIntersect(box1, box2) {
            (box1.min.z < box2.max.z && box1.max.z > box2.min.z);
 }
 
-function createRandomLoad(scene, container, containerWidth, containerLength) {
+function createRandomLoad(scene, container, crane, containerWidth, containerLength) {
     // Dimensões aleatórias da carga (inferiores às do contentor)
-    var loadWidth = Math.max(Math.random() * containerWidth / 2, 5);
-    var loadLength = Math.max(Math.random() * containerLength / 2, 5);
-    var loadHeight = Math.max(Math.random() * containerWidth / 2, 5);
+    var loadWidth = Math.max(Math.random() * containerWidth / 2, 10);
+    var loadLength = Math.max(Math.random() * containerLength / 2, 10);
+    var loadHeight = Math.max(Math.random() * containerWidth / 2, 10);
 
     // Posição aleatória fora do contentor
     var loadX = generateRandomPosition(-containerWidth, containerWidth);
@@ -34,7 +34,6 @@ function createRandomLoad(scene, container, containerWidth, containerLength) {
     var polyhedronTypes = ['box', 'dodecahedron', 'icosahedron', 'torus', 'torusknot'];
     var polyhedronType = polyhedronTypes[Math.floor(Math.random() * polyhedronTypes.length)];
 
-    // Criar carga
     var loadGeometry;
     switch (polyhedronType) {
         case 'box':
@@ -56,7 +55,7 @@ function createRandomLoad(scene, container, containerWidth, containerLength) {
             loadGeometry = new THREE.BoxGeometry(loadWidth, loadHeight, loadLength);
     }
 
-    var loadMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    var loadMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 , wireframe: true});
     var loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
     loadMesh.position.set(loadX, -200, loadZ);
 
@@ -66,31 +65,36 @@ function createRandomLoad(scene, container, containerWidth, containerLength) {
         var existingLoadBox = new THREE.Box3().setFromObject(existingLoads[i]);
         if (boxesIntersect(loadBox, existingLoadBox)) {
             // Se houver interseção, descartar a nova peça e tentar novamente
-            return createRandomLoad(scene, container, containerWidth, containerLength);
+            return createRandomLoad(scene, container, crane, containerWidth, containerLength);
         }
     }   
 
     // Verificar se a carga intersecta com o contentor
     var containerBox = new THREE.Box3().setFromObject(container);
-    if (!boxesIntersect(loadBox, containerBox)) {
-        // Se não houver interseção com o contentor, adicionar a nova carga à lista de cargas existentes e à cena
-        existingLoads.push(loadMesh);
-        scene.add(loadMesh);
-    } else {
+    if (boxesIntersect(loadBox, containerBox)) {
         // Se houver interseção com o contentor, tentar novamente
-        createRandomLoad(scene, container, containerWidth, containerLength);
+        return createRandomLoad(scene, container, crane, containerWidth, containerLength);
+    } 
+
+	// Verificar se a carga intersecta com a grua
+	var craneBox = new THREE.Box3().setFromObject(crane);
+	if (boxesIntersect(loadBox, craneBox)) {
+        // Se houver interseção com a grua, tentar novamente
+        createRandomLoad(scene, container, crane, containerWidth, containerLength);
     }
+	existingLoads.push(loadMesh);
+    scene.add(loadMesh);
 }
 
-function createRandomLoads(scene, container, containerWidth, containerLength, numLoads) {
+function createRandomLoads(scene, container, crane, containerWidth, containerLength, numLoads) {
     for (var i = 0; i < numLoads; i++) {
-        createRandomLoad(scene, container, containerWidth, containerLength);
+        createRandomLoad(scene, container, crane, containerWidth, containerLength);
     }
 }
 
 function addContainerBase(obj, x, y, z) {
     'use strict';
-    geometry = new THREE.BoxGeometry(40, 1, 20);
+    geometry = new THREE.BoxGeometry(100, 1, 50);
     mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
 	obj.add(mesh);
@@ -98,7 +102,7 @@ function addContainerBase(obj, x, y, z) {
 
 function addContainerWall1(obj, x, y, z) {
     'use strict';
-    geometry = new THREE.BoxGeometry(40, 15, 1);
+    geometry = new THREE.BoxGeometry(100, 30, 1);
     mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
 	obj.add(mesh);
@@ -106,7 +110,7 @@ function addContainerWall1(obj, x, y, z) {
 
 function addContainerWall2(obj, x, y, z) {
     'use strict';
-    geometry = new THREE.BoxGeometry(20, 15, 1);
+    geometry = new THREE.BoxGeometry(50, 30, 1);
     mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x, y, z);
 	mesh.rotation.y = Math.PI / 2;
@@ -116,10 +120,10 @@ function addContainerWall2(obj, x, y, z) {
 function addContainer(obj, x, y, z) {
     'use strict';
     addContainerBase(obj, x, y, z);
-    addContainerWall1(obj, x, y + 2.5 , z + 10);
-    addContainerWall1(obj, x, y + 2.5 , z - 10);
-    addContainerWall2(obj, x+20, y + 2.5 , z);
-    addContainerWall2(obj, x-20, y + 2.5 , z);
+    addContainerWall1(obj, x, y + 2.5 , z + 25);
+    addContainerWall1(obj, x, y + 2.5 , z - 25);
+    addContainerWall2(obj, x+50, y + 2.5 , z);
+    addContainerWall2(obj, x-50, y + 2.5 , z);
 }
 function createContainer(x, y, z) {
     'use strict';
@@ -274,6 +278,8 @@ function createCrane(x, y, z) {
     crane.position.x = x;
     crane.position.y = y;
     crane.position.z = z;
+
+	return crane;
 }
 
 /* CREATE SCENE */
@@ -336,10 +342,10 @@ function init() {
     createCameras();
     camera = cameras[0];
 
-    createCrane(0, -200, 0);
+    var crane = createCrane(0, -200, 0);
 	/* FIXME o y está a -150 pq queria ver a grua centrada, mas isto acho que devia ser resolvido na parte das camaras, não aqui */
-	var container = createContainer(0, -200, 0);
-    createRandomLoads(scene, container, 20, 40, 5);
+	var container = createContainer(-50, -200, -100);
+    createRandomLoads(scene, container, crane, 50, 100, 5);
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
