@@ -351,8 +351,8 @@ function createCameras() {
 
     // Camera 2: Lateral View
     const orthographicCameraSide = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
-    orthographicCameraSide.position.set(1000, 0, 0);
-    orthographicCameraSide.lookAt(scene.position);
+    orthographicCameraSide.position.set(1000, -10, 0);
+    orthographicCameraSide.lookAt(new THREE.Vector3(0, -10, 0));
 
     // Camera 3: Top View
     const orthographicCameraTop = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
