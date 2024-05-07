@@ -275,7 +275,7 @@ function addBloco(obj, x, y, z) {
 
     // Mobile Camera
     var ganchoCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
-    ganchoCamera.position.set(x, y, z);
+    ganchoCamera.position.set(x, y-10, z);
     ganchoCamera.lookAt(new THREE.Vector3(x, 0, z));
     cameras[5] = ganchoCamera;
 }
@@ -396,6 +396,7 @@ function update() {
 
     if(keys['e'] && bloco.position.y < maxBlocoY){
         bloco.position.y += 1;
+        cameras[5].position.y += 1;
         var newLength = cabo.children[0].geometry.parameters.height - 1;
         var sizeDiff = 1;
         updateCableLength(cabo, newLength, sizeDiff);
@@ -403,6 +404,7 @@ function update() {
     
     if(keys['d'] && bloco.position.y > minBlocoY){
         bloco.position.y -= 1;
+        cameras[5].position.y -= 1;
         var newLength = cabo.children[0].geometry.parameters.height + 1;
         var sizeDiff = -1;
         updateCableLength(cabo, newLength, sizeDiff);
