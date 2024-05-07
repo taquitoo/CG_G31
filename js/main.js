@@ -60,29 +60,51 @@ function createRandomLoad(scene, container, crane, containerWidth, containerLeng
     var polyhedronType = polyhedronTypes[Math.floor(Math.random() * polyhedronTypes.length)];
 
     var loadGeometry;
+    var loadMaterial = loadMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 , wireframe: true});
+    var loadMesh;
+
     switch (polyhedronType) {
         case 'box':
             loadGeometry = new THREE.BoxGeometry(loadWidth, loadHeight, loadLength);
+
+            loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
+            loadMesh.position.set(loadX, -200 + loadHeight/2, loadZ);
             break;
+
         case 'dodecahedron':
             loadGeometry = new THREE.DodecahedronGeometry(loadWidth / 2);
+
+            loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
+            loadMesh.position.set(loadX, -200 + loadWidth / 2, loadZ);
             break;
+
         case 'icosahedron':
             loadGeometry = new THREE.IcosahedronGeometry(loadWidth / 2);
+
+            loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
+            loadMesh.position.set(loadX, -200 + loadWidth / 2, loadZ);
             break;
+
         case 'torus':
             loadGeometry = new THREE.TorusGeometry(loadWidth / 2, loadHeight / 4, 16, 100);
+
+            loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
+            loadMesh.position.set(loadX, -200 + loadWidth/2 + loadHeight / 4, loadZ);
             break;
+
         case 'torusknot':
             loadGeometry = new THREE.TorusKnotGeometry(loadWidth / 2, loadHeight / 4, 64, 16);
+
+            loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
+            loadMesh.position.set(loadX, -200 + loadWidth/2 + loadHeight / 4, loadZ);
             break;
+
         default:
             loadGeometry = new THREE.BoxGeometry(loadWidth, loadHeight, loadLength);
+            
+            loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
+            loadMesh.position.set(loadX, -200 + loadHeight/2, loadZ);
     }
-
-    var loadMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 , wireframe: true});
-    var loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
-    loadMesh.position.set(loadX, -200, loadZ);
 
     // Verifie if the load intersects with the existing loads
     var loadBox = new THREE.Box3().setFromObject(loadMesh);
