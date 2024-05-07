@@ -15,16 +15,18 @@ var geometry, material, mesh;
 var topo;
 var carrinho;
 var bloco;
+var cabo;
 var dedoSuperior, dedoInferior, pivot;
 
-var maxTopoRotation = 0;
-var minTopoRotation = - Math.PI / 2;
+var caboLen = 200;
+
 var rotationSpeed = Math.PI / 180;
 
 var minCarrinhoX = -135;
 var maxCarrinhoX = 0;
 
-var minBlocoY, maxBlocoY;
+var minBlocoY = -80;
+var maxBlocoY = caboLen;
 
 var maxDedoRotation = Math.PI / 2;
 var minDedoRotation = 0;
@@ -119,48 +121,40 @@ function createRandomLoads(scene, container, crane, containerWidth, containerLen
 /* CREATE CONTAINER */
 //////////////////////
 function addContainerBase(obj, x, y, z) {
+    // Base dimensions: width (100), height (1), depth (50)
     geometry = new THREE.BoxGeometry(100, 1, 50);
     mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y, z);
-	obj.add(mesh);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
 }
 
-function addContainerWall1(obj, x, y, z) {
-    geometry = new THREE.BoxGeometry(100, 30, 1);
+function addContainerWall(obj, x, y, z, width, height, depth, rotationY = 0) {
+    geometry = new THREE.BoxGeometry(width, height, depth);
     mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y, z);
-	obj.add(mesh);
-}
-
-function addContainerWall2(obj, x, y, z) {
-    geometry = new THREE.BoxGeometry(50, 30, 1);
-    mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y, z);
-	mesh.rotation.y = Math.PI / 2;
+    mesh.position.set(x, y + height / 2, z);
+    mesh.rotation.y = rotationY;
     obj.add(mesh);
 }
 
 function addContainer(obj, x, y, z) {
     addContainerBase(obj, x, y, z);
-    addContainerWall1(obj, x, y + 2.5 , z + 25);
-    addContainerWall1(obj, x, y + 2.5 , z - 25);
-    addContainerWall2(obj, x+50, y + 2.5 , z);
-    addContainerWall2(obj, x-50, y + 2.5 , z);
+    addContainerWall(obj, x, y + 0.5, z + 25, 100, 60, 1); // Front wall
+    addContainerWall(obj, x, y + 0.5, z - 25, 100, 60, 1); // Back wall
+    addContainerWall(obj, x + 50, y + 0.5, z, 50, 60, 1, Math.PI / 2); // Right wall
+    addContainerWall(obj, x - 50, y + 0.5, z, 50, 60, 1, Math.PI / 2); // Left wall
 }
 
 function createContainer(x, y, z) {
-
     var container = new THREE.Object3D();
     material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true});
     addContainer(container, x, y, z);
     scene.add(container);
 
-    container.position.x = x;
-    container.position.y = y;
-    container.position.z = z;
+    container.position.set(x, y, z);
 
     return container;
 }
+
 
 ///////////////////
 /* CREATE CRANE */
@@ -215,16 +209,15 @@ function addCarrinho(obj, x, y, z) {
 }
 
 function addCabo(obj, x, y, z) {
-	var len = 250;
-    minBlocoY = 0;
-    maxBlocoY = len;
-	geometry = new THREE.CylinderGeometry(2, 2, len); 
+    cabo = new THREE.Object3D();
+	geometry = new THREE.CylinderGeometry(2, 2, caboLen); 
 	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y-(len/2), z);
-	obj.add(mesh);
+	mesh.position.set(x, y-(caboLen/2), z);
+    cabo.add(mesh);
+	obj.add(cabo);
 
     bloco = new THREE.Object3D();
-	addBloco(bloco, x, y-len, z);
+	addBloco(bloco, x, y-caboLen, z);
     obj.add(bloco);
 }
 
@@ -331,8 +324,8 @@ function createCameras() {
 
     // Camera 1: Front View
     const orthographicCameraFront = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
-    orthographicCameraFront.position.set(0, 0, 1000);
-    orthographicCameraFront.lookAt(scene.position);
+    orthographicCameraFront.position.set(0, -10, 1000);
+    orthographicCameraFront.lookAt(new THREE.Vector3(0, -10, 0));
 
     // Camera 2: Lateral View
     const orthographicCameraSide = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
@@ -351,7 +344,7 @@ function createCameras() {
 
     // Camera 5: Isometric perspective, perspective projection
     const isometricCameraPersp = new THREE.PerspectiveCamera(60, aspectRatio, 1, 2000);
-    isometricCameraPersp.position.set(800, 800, 800);
+    isometricCameraPersp.position.set(500, 500, 500);
     isometricCameraPersp.lookAt(scene.position);
 
     // Collect all cameras
@@ -363,11 +356,11 @@ function createCameras() {
 ////////////
 function update() {
 
-    if(keys['q'] && topo.rotation.y < maxTopoRotation){
+    if(keys['q']){
         topo.rotation.y += rotationSpeed;
     }
 
-    if(keys['a'] && topo.rotation.y > minTopoRotation){
+    if(keys['a']){
         topo.rotation.y -= rotationSpeed;
     }
 
@@ -381,10 +374,16 @@ function update() {
 
     if(keys['e'] && bloco.position.y < maxBlocoY){
         bloco.position.y += 1;
+        var newLength = cabo.children[0].geometry.parameters.height - 1;
+        var sizeDiff = 1;
+        updateCableLength(cabo, newLength, sizeDiff);
     }
-
-    if(keys['d'] && bloco.position.y > minBlocoY){  
+    
+    if(keys['d'] && bloco.position.y > minBlocoY){
         bloco.position.y -= 1;
+        var newLength = cabo.children[0].geometry.parameters.height + 1;
+        var sizeDiff = -1;
+        updateCableLength(cabo, newLength, sizeDiff);
     }
 
     bloco.children.forEach(function(dedoSuperior) {
@@ -400,6 +399,21 @@ function update() {
         });
     });
 }
+
+function updateCableLength(cabo, newLength, sizeDiff) {
+
+    var oldMesh = cabo.children[0];
+    cabo.remove(oldMesh);
+    oldMesh.geometry.dispose();
+
+    var newGeometry = new THREE.CylinderGeometry(2, 2, newLength);
+    var mesh = new THREE.Mesh(newGeometry, material);
+
+    mesh.position.set(oldMesh.position.x, oldMesh.position.y + sizeDiff/2, oldMesh.position.z);
+    
+    cabo.add(mesh);
+}
+
 
 ////////////
 /* RENDER */
