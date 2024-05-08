@@ -250,7 +250,7 @@ function addDedo(obj, x, y, z, angle) {
     dedoSuperior.position.set(x, y - 5, z);
     dedoSuperior.rotation.y = angle;
 
-    geometry = new THREE.BoxGeometry(2, 10, 2);
+    geometry = new THREE.BoxGeometry(2, 14, 2);
     dedoInferior = new THREE.Mesh(geometry, material);
     
     pivot = new THREE.Object3D();
@@ -292,7 +292,15 @@ function addLanca(obj, x, y, z) {
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(x+110, y+10, z);
 	obj.add(mesh);
+	addCabine(obj, x, y, z+15);
 	addGancho(obj, x+60, y, z);
+}
+
+function addCabine(obj, x, y, z) {
+	geometry = new THREE.BoxGeometry(30, 30, 30);
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(x, y, z+15);
+	obj.add(mesh);
 }
 
 function addTopo(obj, x, y, z) {
@@ -510,6 +518,13 @@ function onKeyDown(e) {
         case '6':
             camera = cameras[5];
             break;
+		case '7':
+			scene.traverse(function (node) {
+				if (node instanceof THREE.Mesh) {
+					node.material.wireframe = !node.material.wireframe;
+				}
+			});
+			break;
     }
 }
 
