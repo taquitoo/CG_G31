@@ -9,6 +9,7 @@ var cameras = [];
 var existingLoads = [];
 
 var keys = {};
+var pressedKeys = [];
 
 var geometry, material, mesh;
 
@@ -484,11 +485,27 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+	var hud = document.createElement('div');
+    hud.id = 'hud';
+    hud.style.position = 'absolute';
+    hud.style.top = '10px';
+    hud.style.right = '10px';
+    hud.style.color = 'white';
+    hud.style.fontFamily = 'Arial, sans-serif';
+    hud.style.zIndex = '999';
+    document.body.appendChild(hud);
+
+
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
 
     render();
     animate();
+}
+
+function updateHUD(content) {
+    var hud = document.getElementById('hud');
+    hud.textContent = content;
 }
 
 ///////////////////////
@@ -526,11 +543,21 @@ function onKeyDown(e) {
 			});
 			break;
     }
+	if (!pressedKeys.includes(event.key)) {
+        pressedKeys.push(event.key);
+    }
+	updateHUD('Keys pressed: ' + pressedKeys.join(', '));
 }
 
 function onKeyUp(e) {
     e.preventDefault();
     keys[e.key.toLowerCase()] = false;
+
+	const index = pressedKeys.indexOf(event.key);
+    if (index > -1) {
+        pressedKeys.splice(index, 1);
+    }
+    updateHUD('Keys pressed: ' + pressedKeys.join(', '));
 }
 
 init();
