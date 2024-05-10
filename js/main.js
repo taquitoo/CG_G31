@@ -32,6 +32,17 @@ var maxBlocoY = caboLen;
 var maxDedoRotation = Math.PI / 2;
 var minDedoRotation = 0;
 
+var baseMesh;
+var baseMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+var carrinhoMesh;
+var carrinhoMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+var topoMesh;
+var topoMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+var caboMesh;
+var caboMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+var dedoMesh;
+var dedoMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+
 //////////////////
 /* CREATE LOADS */
 //////////////////
@@ -61,7 +72,7 @@ function createRandomLoad(scene, container, crane, containerWidth, containerLeng
     var polyhedronType = polyhedronTypes[Math.floor(Math.random() * polyhedronTypes.length)];
 
     var loadGeometry;
-    var loadMaterial = loadMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 , wireframe: true});
+    var loadMaterial = loadMaterial = new THREE.MeshBasicMaterial({ color: 0xA91D3A , wireframe: true});
     var loadMesh;
 
     switch (polyhedronType) {
@@ -184,59 +195,59 @@ function createContainer(x, y, z) {
 //////////////////
 function addBase(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(40, 20, 40);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y, z);
-	obj.add(mesh);
+	baseMesh = new THREE.Mesh(geometry, baseMaterial);
+	baseMesh.position.set(x, y, z);
+	obj.add(baseMesh);
 }
 
 function addTorre(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(20, 300, 20);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y, z);
-	obj.add(mesh);
+	baseMesh = new THREE.Mesh(geometry, baseMaterial);
+	baseMesh.position.set(x, y, z);
+	obj.add(baseMesh);
 }
 
 function addPortalanca(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(20, 60, 20);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y+30, z);
-	obj.add(mesh);
+	topoMesh = new THREE.Mesh(geometry, topoMaterial);
+	topoMesh.position.set(x, y+30, z);
+	obj.add(topoMesh);
 }
 
 function addContralanca(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(80, 20, 30);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x-30, y+10, z);
-	obj.add(mesh);
+	topoMesh = new THREE.Mesh(geometry, topoMaterial);
+	topoMesh.position.set(x-30, y+10, z);
+	obj.add(topoMesh);
 }
 
 function addTirantes(obj, x, y, z) {
 	geometry = new THREE.CylinderGeometry(2, 2, 30);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.rotation.z = Math.PI / 4;
-	mesh.position.set(x+20, y+30, z);
-	obj.add(mesh);
+	topoMesh = new THREE.Mesh(geometry, topoMaterial);
+	topoMesh.rotation.z = Math.PI / 4;
+	topoMesh.position.set(x+20, y+30, z);
+	obj.add(topoMesh);
 	geometry = new THREE.CylinderGeometry(2, 2, 30);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.rotation.z = -Math.PI / 4;
-	mesh.position.set(x-20, y+30, z);
-	obj.add(mesh);
+	topoMesh = new THREE.Mesh(geometry, topoMaterial);
+	topoMesh.rotation.z = -Math.PI / 4;
+	topoMesh.position.set(x-20, y+30, z);
+	obj.add(topoMesh);
 }
 
 function addCarrinho(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(30, 10, 30);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x+100, y-5, z);
-	obj.add(mesh);
+	carrinhoMesh = new THREE.Mesh(geometry, carrinhoMaterial);
+	carrinhoMesh.position.set(x+100, y-5, z);
+	obj.add(carrinhoMesh);
 	addCabo(obj, x+100, y-10, z);
 }
 
 function addCabo(obj, x, y, z) {
     cabo = new THREE.Object3D();
 	geometry = new THREE.CylinderGeometry(2, 2, caboLen); 
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y-(caboLen/2), z);
-    cabo.add(mesh);
+	caboMesh = new THREE.Mesh(geometry, caboMaterial);
+	caboMesh.position.set(x, y-(caboLen/2), z);
+    cabo.add(caboMesh);
 	obj.add(cabo);
 
     bloco = new THREE.Object3D();
@@ -247,12 +258,12 @@ function addCabo(obj, x, y, z) {
 function addDedo(obj, x, y, z, angle) {
 
     geometry = new THREE.BoxGeometry(2, 10, 2);
-    dedoSuperior = new THREE.Mesh(geometry, material);
+    dedoSuperior = new THREE.Mesh(geometry, caboMaterial);
     dedoSuperior.position.set(x, y - 5, z);
     dedoSuperior.rotation.y = angle;
 
     geometry = new THREE.BoxGeometry(2, 14, 2);
-    dedoInferior = new THREE.Mesh(geometry, material);
+    dedoInferior = new THREE.Mesh(geometry, dedoMaterial);
     
     pivot = new THREE.Object3D();
     pivot.position.set(0, -5, 0);
@@ -266,9 +277,9 @@ function addDedo(obj, x, y, z, angle) {
 
 function addBloco(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(30, 10, 30);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y-5, z);
-	obj.add(mesh);
+	caboMesh = new THREE.Mesh(geometry, caboMaterial);
+	caboMesh.position.set(x, y-5, z);
+	obj.add(caboMesh);
 	addDedo(obj, x-10, y-10, z-10, -Math.PI/4);
 	addDedo(obj, x-10, y-10, z+10, Math.PI/4);
 	addDedo(obj, x+10, y-10, z-10, 5*Math.PI/4);
@@ -290,18 +301,18 @@ function addGancho(obj, x, y, z) {
 
 function addLanca(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(200, 20, 30);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x+110, y+10, z);
-	obj.add(mesh);
+	topoMesh = new THREE.Mesh(geometry, topoMaterial);
+	topoMesh.position.set(x+110, y+10, z);
+	obj.add(topoMesh);
 	addCabine(obj, x, y, z+15);
 	addGancho(obj, x+60, y, z);
 }
 
 function addCabine(obj, x, y, z) {
 	geometry = new THREE.BoxGeometry(30, 30, 30);
-	mesh = new THREE.Mesh(geometry, material);
-	mesh.position.set(x, y, z+15);
-	obj.add(mesh);
+	topoMesh = new THREE.Mesh(geometry, topoMaterial);
+	topoMesh.position.set(x, y, z+15);
+	obj.add(topoMesh);
 }
 
 function addTopo(obj, x, y, z) {
@@ -313,7 +324,6 @@ function addTopo(obj, x, y, z) {
 
 function addCrane(obj, x, y, z) {
 	topo = new THREE.Object3D();
-    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 
 	addBase(obj, 0, 10, 0);
 	addTorre(obj, 0, 170, 0);
@@ -324,7 +334,6 @@ function addCrane(obj, x, y, z) {
 function createCrane(x, y, z) {
 
 	var crane = new THREE.Object3D();
-    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 
 	addCrane(crane, x, y, z);
 	scene.add(crane);
@@ -440,7 +449,7 @@ function updateCableLength(cabo, newLength, sizeDiff) {
     oldMesh.geometry.dispose();
 
     var newGeometry = new THREE.CylinderGeometry(2, 2, newLength);
-    var mesh = new THREE.Mesh(newGeometry, material);
+    var mesh = new THREE.Mesh(newGeometry, caboMaterial);
 
     mesh.position.set(oldMesh.position.x, oldMesh.position.y + sizeDiff/2, oldMesh.position.z);
     
@@ -516,6 +525,18 @@ function onKeyDown(e) {
     keys[e.key.toLowerCase()] = true;
 
     switch (e.key) {
+		case 'q':
+		case 'a':
+			topoMesh.material.color.set(0xFDE49E);
+		case 'w':
+		case 's':
+			carrinhoMesh.material.color.set(0xFDE49E);
+		case 'e':
+		case 'd':
+			caboMesh.material.color.set(0xFDE49E);
+		case 'r':
+		case 'f':
+			dedoInferior.material.color.set(0xFDE49E);
         case '1':
             camera = cameras[0];
             break;
@@ -541,6 +562,12 @@ function onKeyDown(e) {
 					node.material.wireframe = !node.material.wireframe;
 				}
 			});
+			topoMesh.material.wireframe = !topoMesh.material.wireframe;
+			//carrinhoMesh.material.wireframe = !carrinhoMesh.material.wireframe;
+			//Não sei porque mas o carrinho está a ser mudado no traverse acima
+			caboMesh.material.wireframe = !caboMesh.material.wireframe;
+			dedoInferior.material.wireframe = !dedoInferior.material.wireframe;
+			baseMesh.material.wireframe = !baseMesh.material.wireframe;
 			break;
     }
 	if (!pressedKeys.includes(event.key)) {
@@ -552,6 +579,11 @@ function onKeyDown(e) {
 function onKeyUp(e) {
     e.preventDefault();
     keys[e.key.toLowerCase()] = false;
+
+	topoMesh.material.color.set(0xffffff);
+	carrinhoMesh.material.color.set(0xffffff);
+	caboMesh.material.color.set(0xffffff);
+	dedoInferior.material.color.set(0xffffff);
 
 	const index = pressedKeys.indexOf(event.key);
     if (index > -1) {
