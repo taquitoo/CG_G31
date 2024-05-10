@@ -528,15 +528,25 @@ function onKeyDown(e) {
 		case 'q':
 		case 'a':
 			topoMesh.material.color.set(0xFDE49E);
+			carrinhoMesh.material.color.set(0xFDE49E);
+			caboMesh.material.color.set(0xFDE49E);
+			dedoInferior.material.color.set(0xFDE49E);
+			break;
 		case 'w':
 		case 's':
 			carrinhoMesh.material.color.set(0xFDE49E);
+			caboMesh.material.color.set(0xFDE49E);
+			dedoInferior.material.color.set(0xFDE49E);
+			break;
 		case 'e':
 		case 'd':
 			caboMesh.material.color.set(0xFDE49E);
+			dedoInferior.material.color.set(0xFDE49E);
+			break;
 		case 'r':
 		case 'f':
 			dedoInferior.material.color.set(0xFDE49E);
+			break;
         case '1':
             camera = cameras[0];
             break;
