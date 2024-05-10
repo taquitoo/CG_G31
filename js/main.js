@@ -13,11 +13,15 @@ var pressedKeys = [];
 
 var geometry, material, mesh;
 
-var topo;
+var crane;
+var topo, contralanca;
 var carrinho;
 var bloco;
 var cabo;
 var dedoSuperior, dedoInferior, pivot;
+var container;
+
+var animationInProgress = false;
 
 var caboLen = 200;
 
@@ -55,6 +59,20 @@ function boxesIntersect(box1, box2) {
     return (box1.min.x < box2.max.x && box1.max.x > box2.min.x) &&
            (box1.min.y < box2.max.y && box1.max.y > box2.min.y) &&
            (box1.min.z < box2.max.z && box1.max.z > box2.min.z);
+}
+function calculateSphereRadius(mesh) {
+    var boundingBox = new THREE.Box3().setFromObject(mesh);
+    var boundingSphereRadius = boundingBox.getSize(new THREE.Vector3()).length() / 2;
+    return boundingSphereRadius;
+}
+
+function addCollisionSphereLoads(obj, radius, x, y, z) {
+    radius = calculateSphereRadius(obj);
+    var geometry = new THREE.SphereGeometry(radius, 32, 32);
+    var material = new THREE.MeshBasicMaterial({ color: 0xfff000, visible: false });
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, 0, 0);
+    obj.add(mesh);
 }
 
 function createRandomLoad(scene, container, crane, containerWidth, containerLength) {
@@ -118,30 +136,31 @@ function createRandomLoad(scene, container, crane, containerWidth, containerLeng
             loadMesh.position.set(loadX, -200 + loadHeight/2, loadZ);
     }
 
-    // Verifie if the load intersects with the existing loads
+    // Verify if the load intersects with the existing loads
     var loadBox = new THREE.Box3().setFromObject(loadMesh);
     for (var i = 0; i < existingLoads.length; i++) {
         var existingLoadBox = new THREE.Box3().setFromObject(existingLoads[i]);
         if (boxesIntersect(loadBox, existingLoadBox)) {
-            // Se houver interseção, descartar a nova peça e tentar novamente
+            // If there is an intersection with the existing, try again
             return createRandomLoad(scene, container, crane, containerWidth, containerLength);
         }
     }   
 
-    // Verifie if the load intersects with the container
+    // Verify if the load intersects with the container
     var containerBox = new THREE.Box3().setFromObject(container);
     if (boxesIntersect(loadBox, containerBox)) {
-        // Se houver interseção com o contentor, tentar novamente
+        // If there is an intersection with the container, try again
         return createRandomLoad(scene, container, crane, containerWidth, containerLength);
     } 
 
-    // Verifie if the load intersects with the crane
+    // Verify if the load intersects with the crane
 	var craneBox = new THREE.Box3().setFromObject(crane);
 	if (boxesIntersect(loadBox, craneBox)) {
         // If there is an intersection with the crane, try again
         return createRandomLoad(scene, container, crane, containerWidth, containerLength);
     }
 	existingLoads.push(loadMesh);
+    addCollisionSphereLoads(loadMesh, loadWidth / 2, loadMesh.position.x, loadMesh.position.y, loadMesh.position.z);
     scene.add(loadMesh);
 }
 
@@ -179,7 +198,7 @@ function addContainer(obj, x, y, z) {
 }
 
 function createContainer(x, y, z) {
-    var container = new THREE.Object3D();
+    container = new THREE.Object3D();
     material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true});
     addContainer(container, x, y, z);
     scene.add(container);
@@ -272,6 +291,7 @@ function addDedo(obj, x, y, z, angle) {
     pivot.add(dedoInferior);
     dedoSuperior.add(pivot);
     obj.add(dedoSuperior);
+    addCollisionSphereDedo(dedoInferior, 7, 0, 0, 0);
 }
 
 
@@ -331,9 +351,18 @@ function addCrane(obj, x, y, z) {
 	obj.add(topo);
 }
 
+function addCollisionSphereDedo(obj, radius, x, y, z) {
+    var geometry = new THREE.SphereGeometry(radius, 32, 32);
+    var material = new THREE.MeshBasicMaterial({ color: 0xfff000, visible: false });
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
 function createCrane(x, y, z) {
 
-	var crane = new THREE.Object3D();
+	crane = new THREE.Object3D();
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 
 	addCrane(crane, x, y, z);
 	scene.add(crane);
@@ -390,6 +419,88 @@ function createCameras() {
     // Collect all cameras
     cameras.push(orthographicCameraFront, orthographicCameraSide, orthographicCameraTop, isometricCameraOrtho, isometricCameraPersp);
 }
+////////////////
+/* COLLISIONS */
+////////////////
+function checkCollisions() {
+    for (var i = 0; i < existingLoads.length; i++) {
+        var loadMesh = existingLoads[i];
+        
+        var loadSphere = loadMesh.children[0];
+        var loadSpherePosition = loadSphere.getWorldPosition(new THREE.Vector3());
+
+        for (var j = 1; j < bloco.children.length; j++) {
+            var dedoSuperior = bloco.children[j];
+
+            if (dedoSuperior instanceof THREE.Mesh) {
+                var pivot = dedoSuperior.children[0];
+                var dedoInferior = pivot.children[0];
+
+                var dedoSphere = dedoInferior.children[0];
+                var dedoSpherePosition = dedoSphere.getWorldPosition(new THREE.Vector3());
+
+                var distance = loadSpherePosition.distanceTo(dedoSpherePosition);
+
+                var loadRadius = loadSphere.geometry.parameters.radius;
+                var dedoInferiorRadius = dedoSphere.geometry.parameters.radius;
+
+                if (distance < (loadRadius + dedoInferiorRadius)) {
+                    animateCraneAndLoad(loadMesh);
+                }
+            }
+        }
+    }
+}
+//////////////////////
+/* HANDLE COLLISION */
+//////////////////////
+function animateCraneAndLoad(loadMesh) {
+    animationInProgress = true;
+
+    var finalCarrinhoPosition = new THREE.Vector3(0, 0, 0);
+    var finalBlocoPosition = new THREE.Vector3(0, -70, 0);
+    var finalLoadPosition = new THREE.Vector3(160, loadMesh.position.y, 0);
+    var deltaX = container.position.x - topo.position.x;
+    var deltaY = container.position.z - topo.position.z;
+    var angleToContainer = Math.atan2(deltaY, deltaX);
+    var finalTopoRotation = angleToContainer;
+
+    var animationDuration = 3000;
+
+    var startTime = Date.now();
+
+    var initialTopoRotation = topo.rotation.y;
+    var initialCarrinhoPosition = carrinho.position.clone();
+    var initialBlocoPosition = bloco.position.clone();
+    var initialLoadPosition = loadMesh.position.clone();
+
+    function animationLoop() {
+        var elapsedTime = Date.now() - startTime;
+        var progress = Math.min(elapsedTime / animationDuration, 1);
+
+        var topoRotation = initialTopoRotation + progress * (finalTopoRotation - initialTopoRotation);
+        var carrinhoPosition = initialCarrinhoPosition.clone().add(finalCarrinhoPosition.clone().sub(initialCarrinhoPosition).multiplyScalar(progress));
+        var blocoPosition = initialBlocoPosition.clone().add(finalBlocoPosition.clone().sub(initialBlocoPosition).multiplyScalar(progress));
+        var loadPosition = initialLoadPosition.clone().add(finalLoadPosition.clone().sub(initialLoadPosition).multiplyScalar(progress));
+
+        loadMesh.position.copy(loadPosition);
+        topo.rotation.y = topoRotation;
+        carrinho.position.copy(carrinhoPosition);
+        bloco.position.copy(blocoPosition);
+
+        if (progress < 1) {
+            requestAnimationFrame(animationLoop);
+        } else {
+            animationInProgress = false;
+            var index = existingLoads.indexOf(loadMesh);
+            if (index !== -1) {
+                existingLoads.splice(index, 1);
+            }
+        }
+    }
+
+    animationLoop();
+}
 
 /////////////
 /* UPDATE */
@@ -440,6 +551,7 @@ function update() {
             });
         });
     });
+    checkCollisions();
 }
 
 function updateCableLength(cabo, newLength, sizeDiff) {
@@ -521,10 +633,11 @@ function updateHUD(content) {
 /* KEYBOARD CALLBACK */
 ///////////////////////
 function onKeyDown(e) {
-    e.preventDefault();
-    keys[e.key.toLowerCase()] = true;
+    if (!animationInProgress) {
+        e.preventDefault();
+        keys[e.key.toLowerCase()] = true;
 
-    switch (e.key) {
+        switch (e.key) {
 		case 'q':
 		case 'a':
 			topoMesh.material.color.set(0xFDE49E);
@@ -547,48 +660,50 @@ function onKeyDown(e) {
 		case 'f':
 			dedoInferior.material.color.set(0xFDE49E);
 			break;
-        case '1':
-            camera = cameras[0];
-            break;
-        case '2':
-            camera = cameras[1];
-            break;
-        case '3':
-            camera = cameras[2];
-            break;
-        case '4':
-            camera = cameras[3];
-            break;
-        case '5':
-            camera = cameras[4];
-            break;
-        
-        case '6':
-            camera = cameras[5];
-            break;
-		case '7':
-			scene.traverse(function (node) {
-				if (node instanceof THREE.Mesh) {
-					node.material.wireframe = !node.material.wireframe;
-				}
-			});
+            case '1':
+                camera = cameras[0];
+                break;
+            case '2':
+                camera = cameras[1];
+                break;
+            case '3':
+                camera = cameras[2];
+                break;
+            case '4':
+                camera = cameras[3];
+                break;
+            case '5':
+                camera = cameras[4];
+                break;
+            
+            case '6':
+                camera = cameras[5];
+                break;
+            case '7':
+                scene.traverse(function (node) {
+                    if (node instanceof THREE.Mesh) {
+                        node.material.wireframe = !node.material.wireframe;
+                    }
+                });
 			topoMesh.material.wireframe = !topoMesh.material.wireframe;
 			//carrinhoMesh.material.wireframe = !carrinhoMesh.material.wireframe;
 			//Não sei porque mas o carrinho está a ser mudado no traverse acima
 			caboMesh.material.wireframe = !caboMesh.material.wireframe;
 			dedoInferior.material.wireframe = !dedoInferior.material.wireframe;
 			baseMesh.material.wireframe = !baseMesh.material.wireframe;
-			break;
-    }
-	if (!pressedKeys.includes(event.key)) {
-        pressedKeys.push(event.key);
-    }
-	updateHUD('Keys pressed: ' + pressedKeys.join(', '));
+                break;
+        }
+        if (!pressedKeys.includes(event.key)) {
+            pressedKeys.push(event.key);
+        }
+        updateHUD('Keys pressed: ' + pressedKeys.join(', '));
+    }   
 }
 
 function onKeyUp(e) {
     e.preventDefault();
-    keys[e.key.toLowerCase()] = false;
+
+        keys[e.key.toLowerCase()] = false;
 
 	topoMesh.material.color.set(0xffffff);
 	carrinhoMesh.material.color.set(0xffffff);
