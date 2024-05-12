@@ -98,42 +98,42 @@ function createRandomLoad(scene, container, crane, containerWidth, containerLeng
             loadGeometry = new THREE.BoxGeometry(loadWidth, loadHeight, loadLength);
 
             loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
-            loadMesh.position.set(loadX, -200 + loadHeight/2, loadZ);
+            loadMesh.position.set(loadX, loadHeight/2, loadZ);
             break;
 
         case 'dodecahedron':
             loadGeometry = new THREE.DodecahedronGeometry(loadWidth / 2);
 
             loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
-            loadMesh.position.set(loadX, -200 + loadWidth / 2, loadZ);
+            loadMesh.position.set(loadX, loadWidth / 2, loadZ);
             break;
 
         case 'icosahedron':
             loadGeometry = new THREE.IcosahedronGeometry(loadWidth / 2);
 
             loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
-            loadMesh.position.set(loadX, -200 + loadWidth / 2, loadZ);
+            loadMesh.position.set(loadX, loadWidth / 2, loadZ);
             break;
 
         case 'torus':
             loadGeometry = new THREE.TorusGeometry(loadWidth / 2, loadHeight / 4, 16, 100);
 
             loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
-            loadMesh.position.set(loadX, -200 + loadWidth/2 + loadHeight / 4, loadZ);
+            loadMesh.position.set(loadX, loadWidth/2 + loadHeight / 4, loadZ);
             break;
 
         case 'torusknot':
             loadGeometry = new THREE.TorusKnotGeometry(loadWidth / 2, loadHeight / 4, 64, 16);
 
             loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
-            loadMesh.position.set(loadX, -200 + loadWidth/2 + loadHeight / 4, loadZ);
+            loadMesh.position.set(loadX, loadWidth/2 + loadHeight / 4, loadZ);
             break;
 
         default:
             loadGeometry = new THREE.BoxGeometry(loadWidth, loadHeight, loadLength);
             
             loadMesh = new THREE.Mesh(loadGeometry, loadMaterial);
-            loadMesh.position.set(loadX, -200 + loadHeight/2, loadZ);
+            loadMesh.position.set(loadX, loadHeight/2, loadZ);
     }
 
     // Verify if the load intersects with the existing loads
@@ -309,6 +309,7 @@ function addBloco(obj, x, y, z) {
     var ganchoCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
     ganchoCamera.position.set(x, y-10, z);
     ganchoCamera.lookAt(new THREE.Vector3(x, 0, z));
+	obj.add(ganchoCamera);
     cameras[5] = ganchoCamera;
 }
 
@@ -393,13 +394,13 @@ function createCameras() {
 
     // Camera 1: Front View
     const orthographicCameraFront = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
-    orthographicCameraFront.position.set(0, -10, 1000);
-    orthographicCameraFront.lookAt(new THREE.Vector3(0, -10, 0));
+    orthographicCameraFront.position.set(0, 190, 1000);
+    orthographicCameraFront.lookAt(new THREE.Vector3(0, 190, 0));
 
     // Camera 2: Lateral View
     const orthographicCameraSide = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
-    orthographicCameraSide.position.set(1000, -10, 0);
-    orthographicCameraSide.lookAt(new THREE.Vector3(0, -10, 0));
+    orthographicCameraSide.position.set(1000, 190, 0);
+    orthographicCameraSide.lookAt(new THREE.Vector3(0, 190, 0));
 
     // Camera 3: Top View
     const orthographicCameraTop = new THREE.OrthographicCamera(frustumSize * aspectRatio / -2, frustumSize * aspectRatio / 2, frustumSize / 2, frustumSize / -2, 1, 2000);
@@ -409,12 +410,12 @@ function createCameras() {
     // Camera 4: Isometric perspective, orthogonal projection
     const isometricCameraOrtho = new THREE.OrthographicCamera(-frustumSize, frustumSize, frustumSize, -frustumSize, 1, 2000);
     isometricCameraOrtho.position.set(800, 800, 800);
-    isometricCameraOrtho.lookAt(scene.position);
+    isometricCameraOrtho.lookAt(new THREE.Vector3(0, 190, 0));
 
     // Camera 5: Isometric perspective, perspective projection
     const isometricCameraPersp = new THREE.PerspectiveCamera(60, aspectRatio, 1, 2000);
     isometricCameraPersp.position.set(500, 500, 500);
-    isometricCameraPersp.lookAt(scene.position);
+    isometricCameraPersp.lookAt(new THREE.Vector3(0, 190, 0));
 
     // Collect all cameras
     cameras.push(orthographicCameraFront, orthographicCameraSide, orthographicCameraTop, isometricCameraOrtho, isometricCameraPersp);
@@ -525,7 +526,6 @@ function update() {
 
     if(keys['e'] && bloco.position.y < maxBlocoY){
         bloco.position.y += 1;
-        cameras[5].position.y += 1;
         var newLength = cabo.children[0].geometry.parameters.height - 1;
         var sizeDiff = 1;
         updateCableLength(cabo, newLength, sizeDiff);
@@ -533,7 +533,6 @@ function update() {
     
     if(keys['d'] && bloco.position.y > minBlocoY){
         bloco.position.y -= 1;
-        cameras[5].position.y -= 1;
         var newLength = cabo.children[0].geometry.parameters.height + 1;
         var sizeDiff = -1;
         updateCableLength(cabo, newLength, sizeDiff);
@@ -594,7 +593,7 @@ function init() {
     createCameras();
     camera = cameras[0];
 
-    var crane = createCrane(0, -200, 0);
+    var crane = createCrane(0, 0, 0);
 	
 	var container = createContainer(80, 0, 0);
 	crane.add(container);
