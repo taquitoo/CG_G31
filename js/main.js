@@ -15,8 +15,7 @@ var carousel;
 var keys = {};
 var pressedKeys = [];
 
-//var materialDefault = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true});
-var materialDefault = new THREE.MeshPhongMaterial({color: 0xFFD0D0});
+var materialDefault = new THREE.MeshPhongMaterial({color: 0xFFD0D0, wireframe: false});
 
 var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
 
@@ -93,6 +92,16 @@ class Carousel extends THREE.Object3D {
 			);
 			this.children[ring_number].add(surface);
 			this.surfaces_number[ring_number]++;
+			
+			//Add spotligth in the ring pointing to the surface
+			const spotlight = new THREE.SpotLight(0xffffff, 1, 50, Math.PI/2, 0.8, 0.5);
+			spotlight.position.set(
+				Math.cos(angle) * Carousel.RING_WIDTH * (ring_number),
+				Carousel.RING_HEIGHT/2,
+				Math.sin(angle) * Carousel.RING_WIDTH * (ring_number),
+			);
+			spotlight.target = surface;
+			this.children[ring_number].add(spotlight);
 		}
 	}
 }
@@ -136,7 +145,7 @@ function update() {
 			carousel.setRingElevation(i, percentage);
 		}
 		for(var j=0; j<carousel.surfaces_number[i]; j++) {
-			carousel.children[i].children[j].rotation.y += ROTATION_SPEED*4;
+			carousel.children[i].children[j*2].rotation.y += ROTATION_SPEED*4;
 		}
 	}
 }
@@ -155,6 +164,13 @@ function onKeyDown(e) {
 		case 'D':
 			directionalLight.visible = !directionalLight.visible;
 			break;
+		case 's':
+		case 'S':
+			for(var i=1; i<=Carousel.N_RINGS; i++) {
+				for(var j=0; j<carousel.surfaces_number[i]; j++) {
+					carousel.children[i].children[j*2+1].visible = !carousel.children[i].children[j*2+1].visible;
+				}
+			}
 	}
 }
 
