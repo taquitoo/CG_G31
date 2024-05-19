@@ -17,6 +17,17 @@ var materialDefault = new THREE.MeshPhongMaterial({color: 0xFFD0D0, wireframe: f
 
 var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
 
+function createSkydome() {
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load('js/1.png');
+    const geometry = new THREE.SphereGeometry(500, 32, 32);
+    geometry.scale(-1, 1, 1);
+
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const skydome = new THREE.Mesh(geometry, material);
+    scene.add(skydome);
+}
+
 function addCarouselBase(obj, x, y, z, radius, height) {
     var geometry = new THREE.CylinderGeometry(radius, radius, height, RADIAL_SEGMENTS);
     var mesh = new THREE.Mesh(geometry, materialDefault);
@@ -181,6 +192,8 @@ function init() {
 	createScene();
 	createCamera();
 	createLighting();
+
+	createSkydome();
 
 	carousel = new Carousel(0, 0, 0);
     scene.add(carousel);
