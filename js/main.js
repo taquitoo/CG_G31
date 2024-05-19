@@ -21,7 +21,8 @@ var materials = {
     normal: new THREE.MeshNormalMaterial()
 };
 
-var materialDefault = new THREE.MeshPhongMaterial({color: 0xFFD0D0, wireframe: false});
+var materialDefault = materials.lambert;
+var skydomeMaterial = new THREE.MeshBasicMaterial();
 
 var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
 
@@ -31,8 +32,8 @@ function createSkydome() {
     const geometry = new THREE.SphereGeometry(500, 32, 32);
     geometry.scale(-1, 1, 1);
 
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    const skydome = new THREE.Mesh(geometry, material);
+    skydomeMaterial.map = texture;
+    const skydome = new THREE.Mesh(geometry, skydomeMaterial);
     scene.add(skydome);
 }
 
@@ -180,7 +181,7 @@ class Carousel extends THREE.Object3D {
 
 function updateMaterial(materialType) {
     scene.traverse(function (object) {
-        if (object.isMesh) {
+        if (object.isMesh && object.material !== skydomeMaterial) {
             object.material = materials[materialType];
             object.material.needsUpdate = true;
         }
