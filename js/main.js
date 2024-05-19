@@ -13,6 +13,13 @@ var carousel;
 var keys = {};
 var pressedKeys = [];
 
+var materials = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0xFFD0D0 }),
+    phong: new THREE.MeshPhongMaterial({ color: 0xFFD0D0, specular: 0x009900, shininess: 30 }),
+    toon: new THREE.MeshToonMaterial({ color: 0xFFD0D0 }),
+    normal: new THREE.MeshNormalMaterial()
+};
+
 var materialDefault = new THREE.MeshPhongMaterial({color: 0xFFD0D0, wireframe: false});
 
 var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
@@ -70,7 +77,7 @@ function createMobiusStrip() {
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide, wireframe: true });
+    const material = new THREE.MeshBasicMaterial({ color: 0x00000, side: THREE.DoubleSide, wireframe: true });
     const mobiusStrip = new THREE.Mesh(geometry, material);
 
     mobiusStrip.position.set(0, 150, 0);
@@ -239,12 +246,25 @@ function onKeyUp(e) {
 	keys[e.key.toLowerCase()] = false;
 }
 
+function onWindowResize() {
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    const width = 400;
+    const height = width / aspectRatio;
+    camera.left = -width;
+    camera.right = width;
+    camera.top = height;
+    camera.bottom = -height;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
 function init() {
 	createScene();
 	createCamera();
 	createLighting();
 
-	//createSkydome();
+	createSkydome();
 
 	carousel = new Carousel(0, 0, 0);
     scene.add(carousel);
@@ -272,6 +292,7 @@ function init() {
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+	window.addEventListener("resize", onWindowResize);
 
 	render();
 	animate();
