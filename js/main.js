@@ -9,6 +9,7 @@ var scene, renderer, camera;
 var directionalLight, ambientLight;
 
 var carousel;
+var pointLights = []; 
 
 var keys = {};
 var pressedKeys = [];
@@ -37,7 +38,7 @@ function createSkydome() {
 
 function createMobiusStrip() {
     const radius = 45;
-    const width = 10;
+    const width = 5;
     const lengthSegments = 200;
     const widthSegments = 1;
 
@@ -80,10 +81,14 @@ function createMobiusStrip() {
     const material = new THREE.MeshBasicMaterial({ color: 0x00000, side: THREE.DoubleSide, wireframe: true });
     const mobiusStrip = new THREE.Mesh(geometry, material);
 
-    mobiusStrip.position.set(0, 70, 0);
+    mobiusStrip.position.set(0, 60, 0);
     mobiusStrip.rotation.x = Math.PI / 2;
 
     scene.add(mobiusStrip);
+}
+
+function createPointLightsOnMobius() {
+
 }
 
 function addCarouselBase(obj, x, y, z, radius, height) {
@@ -173,6 +178,23 @@ class Carousel extends THREE.Object3D {
 	}
 }
 
+function updateMaterial(materialType) {
+    scene.traverse(function (object) {
+        if (object.isMesh) {
+            object.material = materials[materialType];
+            object.material.needsUpdate = true;
+        }
+    });
+}
+
+function toggleLighting() {
+    scene.traverse(function (object) {
+        if (object.isLight) {
+            object.visible = !object.visible;
+        }
+    });
+}
+
 function createLighting() {
 	directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 	directionalLight.position.set(300, 1000, 200).normalize();
@@ -224,21 +246,40 @@ function animate() {
 }
 
 function onKeyDown(e) {
-	e.preventDefault();
-	keys[e.key.toLowerCase()] = true;
-	switch(e.key) {
-		case 'd':
-		case 'D':
-			directionalLight.visible = !directionalLight.visible;
-			break;
-		case 's':
-		case 'S':
-			for(var i=1; i<=Carousel.N_RINGS; i++) {
+    e.preventDefault();
+    keys[e.key.toLowerCase()] = true;
+    switch (e.key.toLowerCase()) {
+        case 'd':
+            directionalLight.visible = !directionalLight.visible;
+            break;
+        case 's':
+            for(var i=1; i<=Carousel.N_RINGS; i++) {
 				for(var j=0; j<carousel.surfaces_number[i]; j++) {
 					carousel.children[i].children[j*2+1].visible = !carousel.children[i].children[j*2+1].visible;
 				}
 			}
-	}
+            break;
+        case 'p':
+            pointLights.forEach(light => {
+                light.visible = !light.visible;
+            });
+            break;
+        case 'q':
+            updateMaterial('lambert');
+            break;
+        case 'w':
+            updateMaterial('phong');
+            break;
+        case 'e':
+            updateMaterial('toon');
+            break;
+        case 'r':
+            updateMaterial('normal');
+            break;
+		case 't':
+			toggleLighting();
+			break;
+    }
 }
 
 function onKeyUp(e) {
@@ -282,6 +323,7 @@ function init() {
 	}
 
 	createMobiusStrip();
+	createPointLightsOnMobius();
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
