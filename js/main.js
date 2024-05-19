@@ -36,7 +36,7 @@ function createSkydome() {
 }
 
 function createMobiusStrip() {
-    const radius = 200;
+    const radius = 45;
     const width = 10;
     const lengthSegments = 200;
     const widthSegments = 1;
@@ -80,7 +80,7 @@ function createMobiusStrip() {
     const material = new THREE.MeshBasicMaterial({ color: 0x00000, side: THREE.DoubleSide, wireframe: true });
     const mobiusStrip = new THREE.Mesh(geometry, material);
 
-    mobiusStrip.position.set(0, 150, 0);
+    mobiusStrip.position.set(0, 70, 0);
     mobiusStrip.rotation.x = Math.PI / 2;
 
     scene.add(mobiusStrip);
