@@ -28,6 +28,57 @@ function createSkydome() {
     scene.add(skydome);
 }
 
+function createMobiusStrip() {
+    const radius = 200;
+    const width = 10;
+    const lengthSegments = 200;
+    const widthSegments = 1;
+
+    const positions = [];
+    const indices = [];
+
+    for (let j = 0; j <= widthSegments; j++) {
+        for (let i = 0; i <= lengthSegments; i++) {
+            const theta = (i / lengthSegments) * 2 * Math.PI;
+            const phi = (j / widthSegments) * Math.PI - Math.PI / 2;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
+            const sinPhi = Math.sin(phi);
+            const cosPhi = Math.cos(phi);
+
+            const x = radius * cosTheta + width * cosTheta * cosPhi;
+            const y = radius * sinTheta + width * sinTheta * cosPhi;
+            const z = width * sinPhi;
+
+            positions.push(x, y, z);
+        }
+    }
+
+    for (let j = 0; j < widthSegments; j++) {
+        for (let i = 0; i < lengthSegments; i++) {
+            const a = j * (lengthSegments + 1) + i;
+            const b = j * (lengthSegments + 1) + i + 1;
+            const c = (j + 1) * (lengthSegments + 1) + i + 1;
+            const d = (j + 1) * (lengthSegments + 1) + i;
+
+            indices.push(a, b, d);
+            indices.push(b, c, d);
+        }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setIndex(indices);
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide, wireframe: true });
+    const mobiusStrip = new THREE.Mesh(geometry, material);
+
+    mobiusStrip.position.set(0, 150, 0);
+    mobiusStrip.rotation.x = Math.PI / 2;
+
+    scene.add(mobiusStrip);
+}
+
 function addCarouselBase(obj, x, y, z, radius, height) {
     var geometry = new THREE.CylinderGeometry(radius, radius, height, RADIAL_SEGMENTS);
     var mesh = new THREE.Mesh(geometry, materialDefault);
@@ -193,7 +244,7 @@ function init() {
 	createCamera();
 	createLighting();
 
-	createSkydome();
+	//createSkydome();
 
 	carousel = new Carousel(0, 0, 0);
     scene.add(carousel);
@@ -209,6 +260,8 @@ function init() {
 		carousel.addSurface(2, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materialDefault));
 		carousel.addSurface(3, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materialDefault));
 	}
+
+	createMobiusStrip();
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
