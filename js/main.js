@@ -216,12 +216,9 @@ function createLighting() {
 }
 
 function createCamera() {
-	/* TODO initial camera to be able to see what I'm doing, not the one asked */
 	const aspectRatio = window.innerWidth / window.innerHeight;
-	const width = 400;
-	const height = width / aspectRatio;
-	camera = new THREE.OrthographicCamera(-width, width, height, -height, 1, 1000);
-	camera.position.set(200, 200, 200);
+	camera = new THREE.PerspectiveCamera(75, aspectRatio, 1, 2000);
+	camera.position.set(200, 200, 400);
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
 }
 
