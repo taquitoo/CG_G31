@@ -44,7 +44,7 @@ var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
 
 function createSkydome() {
     const loader = new THREE.TextureLoader();
-    const texture = loader.load('js/1.png');
+    const texture = loader.load('js/poem.jpg');
     const geometry = new THREE.SphereGeometry(500, 32, 32);
     geometry.scale(-1, 1, 1);
 	
