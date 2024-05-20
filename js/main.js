@@ -21,8 +21,21 @@ var materials = {
     normal: new THREE.MeshNormalMaterial()
 };
 
-var materialDefault = materials.lambert;
-var skydomeMaterial = new THREE.MeshBasicMaterial();
+var materialsMobious = {
+    lambert: new THREE.MeshLambertMaterial({ 
+        color: 0xADFF2F, 
+        side: THREE.DoubleSide
+    }),
+    phong: new THREE.MeshPhongMaterial({ 
+        color: 0xADFF2F, 
+        side: THREE.DoubleSide
+    }),
+    toon: new THREE.MeshToonMaterial({ 
+        color: 0xADFF2F, 
+        side: THREE.DoubleSide
+    }),
+    normal: new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
+};
 
 var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
 
@@ -31,9 +44,12 @@ function createSkydome() {
     const texture = loader.load('js/1.png');
     const geometry = new THREE.SphereGeometry(500, 32, 32);
     geometry.scale(-1, 1, 1);
-
+	
+	var skydomeMaterial = new THREE.MeshBasicMaterial();
     skydomeMaterial.map = texture;
     const skydome = new THREE.Mesh(geometry, skydomeMaterial);
+
+	skydome.name = 'skydome';
     scene.add(skydome);
 }
 
@@ -79,12 +95,16 @@ function createMobiusStrip() {
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
-    const material = new THREE.MeshBasicMaterial({ color: 0x00000, side: THREE.DoubleSide, wireframe: true });
+    const material = new THREE.MeshLambertMaterial({ 
+        color: 0xADFF2F, 
+        side: THREE.DoubleSide
+    });
     const mobiusStrip = new THREE.Mesh(geometry, material);
 
     mobiusStrip.position.set(0, 60, 0);
     mobiusStrip.rotation.x = Math.PI / 2;
 
+	mobiusStrip.name = 'mobiusStrip';
     scene.add(mobiusStrip);
 }
 
@@ -94,7 +114,7 @@ function createPointLightsOnMobius() {
 
 function addCarouselBase(obj, x, y, z, radius, height) {
     var geometry = new THREE.CylinderGeometry(radius, radius, height, RADIAL_SEGMENTS);
-    var mesh = new THREE.Mesh(geometry, materialDefault);
+    var mesh = new THREE.Mesh(geometry, materials.lambert);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -127,7 +147,7 @@ function addCarouselRing(obj, x, y, z, innerRadius, outerRadius) {
 
 	const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 
-	const mesh = new THREE.Mesh(geometry, materialDefault);
+	const mesh = new THREE.Mesh(geometry, materials.lambert);
 	obj.add(mesh);
 }
 
@@ -179,23 +199,6 @@ class Carousel extends THREE.Object3D {
 	}
 }
 
-function updateMaterial(materialType) {
-    scene.traverse(function (object) {
-        if (object.isMesh && object.material !== skydomeMaterial) {
-            object.material = materials[materialType];
-            object.material.needsUpdate = true;
-        }
-    });
-}
-
-function toggleLighting() {
-    scene.traverse(function (object) {
-        if (object.isLight) {
-            object.visible = !object.visible;
-        }
-    });
-}
-
 function createLighting() {
 	directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 	directionalLight.position.set(300, 1000, 200).normalize();
@@ -218,7 +221,7 @@ function createCamera() {
 
 function createScene() {
 	scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xA3D8FF);
+    scene.background = new THREE.Color(0x00000);
 }
 
 function render() {
@@ -244,6 +247,27 @@ function animate() {
     requestAnimationFrame(animate);
     update();
     render();
+}
+
+function updateMaterial(materialType) {
+    scene.traverse(function (object) {
+        if (object.isMesh && object.name !== 'skydome' && object.name !== 'mobiusStrip') {
+            object.material = materials[materialType];
+            object.material.needsUpdate = true;
+        }
+		else if (object.name === 'mobiusStrip') {
+			object.material = materialsMobious[materialType];
+			object.material.needsUpdate = true;
+		}
+    });
+}
+
+function toggleLighting() {
+    scene.traverse(function (object) {
+        if (object.isLight) {
+            object.visible = !object.visible;
+        }
+    });
 }
 
 function onKeyDown(e) {
@@ -318,9 +342,9 @@ function init() {
 	 * otherwise half of the surface will be inside the ring
 	 * */
 	for (var i=1; i<=8; i++) {
-		carousel.addSurface(1, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materialDefault));
-		carousel.addSurface(2, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materialDefault));
-		carousel.addSurface(3, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materialDefault));
+		carousel.addSurface(1, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materials.lambert));
+		carousel.addSurface(2, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materials.lambert));
+		carousel.addSurface(3, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materials.lambert));
 	}
 
 	createMobiusStrip();
