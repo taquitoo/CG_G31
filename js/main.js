@@ -9,7 +9,8 @@ import { StereoCamera } from 'three';
 const ROTATION_SPEED = Math.PI/1440;
 const RADIAL_SEGMENTS = 64;
 
-var scene, renderer, camera; 
+var scene, renderer, camera;
+var stereoCamera; 
 var directionalLight, ambientLight;
 
 var carousel;
@@ -230,11 +231,11 @@ function createLighting() {
 function createCamera() {
 	const aspectRatio = window.innerWidth / window.innerHeight;
 	camera = new THREE.PerspectiveCamera(75, aspectRatio, 1, 2000);
-	camera.position.set(200, 200, 400);
+	camera.position.set(200, 200, 800);
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    var stereoCamera = new StereoCamera();
-    stereoCamera.aspect = 0.5;
+    stereoCamera = new StereoCamera();
+    stereoCamera.aspect = 1;
 }
 
 function createScene() {
