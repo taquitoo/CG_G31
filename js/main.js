@@ -101,10 +101,7 @@ function createMobiusStrip() {
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
-    const material = new THREE.MeshLambertMaterial({ 
-        color: 0xADFF2F, 
-        side: THREE.DoubleSide
-    });
+    const material = materialsMobious.lambert;
     const mobiusStrip = new THREE.Mesh(geometry, material);
 
     mobiusStrip.position.set(0, 60, 0);
