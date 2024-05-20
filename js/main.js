@@ -12,7 +12,6 @@ var carousel;
 var pointLights = []; 
 
 var keys = {};
-var pressedKeys = [];
 
 var materials = {
     lambert: new THREE.MeshLambertMaterial({ color: 0xFFD0D0 }),
@@ -62,6 +61,8 @@ function createMobiusStrip() {
     const positions = [];
     const indices = [];
 
+	const lightPositions = [];
+
     for (let j = 0; j <= widthSegments; j++) {
         for (let i = 0; i <= lengthSegments; i++) {
             const theta = (i / lengthSegments) * 2 * Math.PI;
@@ -76,6 +77,10 @@ function createMobiusStrip() {
             const z = width * sinPhi;
 
             positions.push(x, y, z);
+
+			if (j === 0 && (i % (lengthSegments / 8) === 0)) {
+                lightPositions.push({ x, y, z });
+            }
         }
     }
 
@@ -106,10 +111,13 @@ function createMobiusStrip() {
 
 	mobiusStrip.name = 'mobiusStrip';
     scene.add(mobiusStrip);
-}
 
-function createPointLightsOnMobius() {
-
+	lightPositions.forEach(pos => {
+        const pointLight = new THREE.PointLight(0xffffff, 1, 1000);
+        pointLight.position.set(pos.x, pos.y, pos.z);
+        scene.add(pointLight);
+        pointLights.push(pointLight);
+    });
 }
 
 function addCarouselBase(obj, x, y, z, radius, height) {
@@ -270,6 +278,7 @@ function toggleLighting() {
     });
 }
 
+
 function onKeyDown(e) {
     e.preventDefault();
     keys[e.key.toLowerCase()] = true;
@@ -348,7 +357,6 @@ function init() {
 	}
 
 	createMobiusStrip();
-	createPointLightsOnMobius();
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
