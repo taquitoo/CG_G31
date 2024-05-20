@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
 
 'use strict';
 
@@ -247,7 +248,7 @@ function update() {
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+    renderer.setAnimationLoop(animate);
     update();
     render();
 }
@@ -357,7 +358,9 @@ function init() {
         antialias: true,
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
     document.body.appendChild(renderer.domElement);
+    document.body.appendChild(VRButton.createButton(renderer));
 	const controls = new OrbitControls(camera, renderer.domElement)
 
     window.addEventListener("keydown", onKeyDown);
