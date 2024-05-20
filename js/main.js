@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { StereoCamera } from 'three';
+
 
 'use strict';
 
@@ -221,6 +223,9 @@ function createCamera() {
 	camera = new THREE.PerspectiveCamera(75, aspectRatio, 1, 2000);
 	camera.position.set(200, 200, 400);
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+    var stereoCamera = new StereoCamera();
+    stereoCamera.aspect = 0.5;
 }
 
 function createScene() {
@@ -229,7 +234,13 @@ function createScene() {
 }
 
 function render() {
-	renderer.render(scene, camera);
+    if (renderer.xr.isPresenting) {
+        stereoCamera.update(camera);
+        renderer.render(scene, stereoCamera.cameraL);
+        renderer.render(scene, stereoCamera.cameraR);
+    } else {
+        renderer.render(scene, camera);
+    }
 }
 
 function update() {
