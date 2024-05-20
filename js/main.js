@@ -59,7 +59,11 @@ var materialsSkydome = {
         bumpScale: 1.3,
         map: map,
     }),
-    normal: new THREE.MeshNormalMaterial()
+    normal: new THREE.MeshNormalMaterial({
+        bumpMap: bmap,
+        bumpScale: 1.3,
+        map: map,
+    })
 }
 
 var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
