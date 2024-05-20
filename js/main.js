@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 
+'use strict';
 
 const ROTATION_SPEED = Math.PI/1440;
 const RADIAL_SEGMENTS = 64;
