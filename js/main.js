@@ -66,7 +66,8 @@ var materialsSkydome = {
     })
 }
 
-var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
+var counter = [0, Math.PI, 2*Math.PI/3, Math.PI/3];
+var movToggle = [false, true, true, true];
 
 function createSkydome() {
 
@@ -189,7 +190,6 @@ class Carousel extends THREE.Object3D {
 	setRingElevation(ring_number, percentage) {
 		const ring = this.children[ring_number];
 		if(ring) {
-			/* TODO check if the rings can get lower than the base*/
 			ring.position.y = (percentage+1)/2 * Carousel.RING_HEIGHT/2;
 		}
 	}
@@ -204,7 +204,6 @@ class Carousel extends THREE.Object3D {
 			this.children[ring_number].add(surface);
 			this.surfaces_number[ring_number]++;
 			
-			//Add spotligth in the ring pointing to the surface
 			const spotlight = new THREE.SpotLight(0xffffff, 1, 50, Math.PI/2, 0.8, 0.5);
 			spotlight.position.set(
 				Math.cos(angle) * Carousel.RING_WIDTH * (ring_number),
@@ -256,9 +255,9 @@ function update() {
 	carousel.rotation.y += ROTATION_SPEED;
 
 	for(var i=1; i<=Carousel.N_RINGS; i++){
-		if(keys[i]) {
-			var percentage = Math.sin(counter[i]);
-			counter[i] += 3.1;
+		if(movToggle[i]){
+			var percentage = -Math.sin(counter[i]);
+			counter[i] += 0.08;
 			carousel.setRingElevation(i, percentage);
 		}
 		for(var j=0; j<carousel.surfaces_number[i]; j++) {
@@ -332,6 +331,15 @@ function onKeyDown(e) {
             break;
 		case 't':
 			toggleLighting();
+			break;
+		case '1':
+			movToggle[1] = !movToggle[1];
+			break;
+		case '2':
+			movToggle[2] = !movToggle[2];
+			break;
+		case '3':
+			movToggle[3] = !movToggle[3];
 			break;
     }
 }
