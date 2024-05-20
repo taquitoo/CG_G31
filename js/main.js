@@ -40,17 +40,35 @@ var materialsMobious = {
     normal: new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
 };
 
+const map = new THREE.TextureLoader().load('js/poem.jpg');
+const bmap = new THREE.TextureLoader().load('js/poem_bump.jpg');
+
+var materialsSkydome = {
+    lambert: new THREE.MeshPhongMaterial({
+        bumpMap: bmap,
+        bumpScale: 1.3,
+        map: map,
+    }),
+    phong: new THREE.MeshPhongMaterial({
+        bumpMap: bmap,
+        bumpScale: 1.3,
+        map: map,
+    }),
+    toon: new THREE.MeshToonMaterial({
+        bumpMap: bmap,
+        bumpScale: 1.3,
+        map: map,
+    }),
+    normal: new THREE.MeshNormalMaterial()
+}
+
 var counter = [0, Math.PI/2, Math.PI/2, Math.PI/2];
 
 function createSkydome() {
-    const loader = new THREE.TextureLoader();
-    const texture = loader.load('js/poem.jpg');
+
     const geometry = new THREE.SphereGeometry(500, 32, 32);
     geometry.scale(-1, 1, 1);
-	
-	var skydomeMaterial = new THREE.MeshBasicMaterial();
-    skydomeMaterial.map = texture;
-    const skydome = new THREE.Mesh(geometry, skydomeMaterial);
+    const skydome = new THREE.Mesh(geometry, materialsSkydome.lambert);
 
 	skydome.name = 'skydome';
     scene.add(skydome);
@@ -58,67 +76,54 @@ function createSkydome() {
 
 function createMobiusStrip() {
     const radius = 45;
-    const width = 5;
+    const stripWidth = 5;
     const lengthSegments = 200;
-    const widthSegments = 1;
-
     const positions = [];
     const indices = [];
 
-	const lightPositions = [];
+    for (let i = 0; i <= lengthSegments; i++) {
+        const theta = (i / lengthSegments) * 2 * Math.PI;
+        const halfTwist = (i / lengthSegments) * Math.PI;
 
-    for (let j = 0; j <= widthSegments; j++) {
-        for (let i = 0; i <= lengthSegments; i++) {
-            const theta = (i / lengthSegments) * 2 * Math.PI;
-            const phi = (j / widthSegments) * Math.PI - Math.PI / 2;
-            const sinTheta = Math.sin(theta);
-            const cosTheta = Math.cos(theta);
-            const sinPhi = Math.sin(phi);
-            const cosPhi = Math.cos(phi);
+        const sinTheta = Math.sin(theta);
+        const cosTheta = Math.cos(theta);
+        const sinHalfTwist = Math.sin(halfTwist);
+        const cosHalfTwist = Math.cos(halfTwist);
 
-            const x = radius * cosTheta + width * cosTheta * cosPhi;
-            const y = radius * sinTheta + width * sinTheta * cosPhi;
-            const z = width * sinPhi;
+        const xTop = (radius + stripWidth * cosHalfTwist) * cosTheta;
+        const yTop = (radius + stripWidth * cosHalfTwist) * sinTheta;
+        const zTop = stripWidth * sinHalfTwist;
 
-            positions.push(x, y, z);
+        const xBottom = (radius - stripWidth * cosHalfTwist) * cosTheta;
+        const yBottom = (radius - stripWidth * cosHalfTwist) * sinTheta;
+        const zBottom = -stripWidth * sinHalfTwist;
 
-			if (j === 0 && (i % (lengthSegments / 8) === 0)) {
-                lightPositions.push({ x, y, z });
-            }
-        }
+        positions.push(xTop, yTop, zTop);
+        positions.push(xBottom, yBottom, zBottom);
     }
 
-    for (let j = 0; j < widthSegments; j++) {
-        for (let i = 0; i < lengthSegments; i++) {
-            const a = j * (lengthSegments + 1) + i;
-            const b = j * (lengthSegments + 1) + i + 1;
-            const c = (j + 1) * (lengthSegments + 1) + i + 1;
-            const d = (j + 1) * (lengthSegments + 1) + i;
+    for (let i = 0; i < lengthSegments; i++) {
+        const a = 2 * i;
+        const b = 2 * i + 1;
+        const c = (2 * i + 3) % (2 * (lengthSegments + 1));
+        const d = (2 * i + 2) % (2 * (lengthSegments + 1));
 
-            indices.push(a, b, d);
-            indices.push(b, c, d);
-        }
+        indices.push(a, b, d);
+        indices.push(b, c, d);
     }
 
     const geometry = new THREE.BufferGeometry();
-    geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
 
     const material = materialsMobious.lambert;
     const mobiusStrip = new THREE.Mesh(geometry, material);
-
     mobiusStrip.position.set(0, 60, 0);
     mobiusStrip.rotation.x = Math.PI / 2;
 
-	mobiusStrip.name = 'mobiusStrip';
+    mobiusStrip.name = 'mobiusStrip';
     scene.add(mobiusStrip);
-
-	lightPositions.forEach(pos => {
-        const pointLight = new THREE.PointLight(0xffffff, 1, 1000);
-        pointLight.position.set(pos.x, pos.y, pos.z);
-        scene.add(pointLight);
-        pointLights.push(pointLight);
-    });
 }
 
 function addCarouselBase(obj, x, y, z, radius, height) {
@@ -274,6 +279,10 @@ function updateMaterial(materialType) {
 			object.material = materialsMobious[materialType];
 			object.material.needsUpdate = true;
 		}
+        else if (object.name === 'skydome') {
+            object.material = materialsSkydome[materialType];
+            object.material.needsUpdate = true;
+        }
     });
 }
 
