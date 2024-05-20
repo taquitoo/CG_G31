@@ -235,7 +235,7 @@ function createCamera() {
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     stereoCamera = new StereoCamera();
-    stereoCamera.aspect = 1;
+    stereoCamera.aspect = 0.5;
 }
 
 function createScene() {
@@ -269,7 +269,6 @@ function update() {
 }
 
 function animate() {
-    renderer.setAnimationLoop(animate);
     update();
     render();
 }
@@ -393,7 +392,7 @@ function init() {
 	window.addEventListener("resize", onWindowResize);
 
 	render();
-	animate();
+	renderer.setAnimationLoop(animate);
 }
 
 init();
