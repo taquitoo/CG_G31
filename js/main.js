@@ -92,7 +92,7 @@ var materialsSkydome = {
     })
 }
 
-var counter = [0, Math.PI, 2*Math.PI/3, Math.PI/3];
+/*var counter = [0, Math.PI, 2*Math.PI/3, Math.PI/3];*/
 var movToggle = [false, true, true, true];
 
 function createSkydome() {
@@ -295,8 +295,13 @@ function update() {
 
 	for(var i=1; i<=Carousel.N_RINGS; i++){
 		if(movToggle[i]){
-			var percentage = -Math.sin(counter[i]);
-			counter[i] += 0.08;
+			var percentage = -Math.sin(new Date().getTime()/500 + i);
+			/*counter[i] += 0.08; Check if this is the intended behaviour
+			 * Because at first, when we did the movement with our counter,
+			 * when we stopped and resumed the movement, it resumed from the 
+			 * point it had stopped, but now using time, the ring may 
+			 * change elevation abruptly.
+			 */
 			carousel.setRingElevation(i, percentage);
 		}
 		for(var j=0; j<carousel.surfaces_number[i]; j++) {
