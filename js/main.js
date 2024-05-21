@@ -6,8 +6,8 @@ import { StereoCamera } from 'three';
 
 'use strict';
 
-const ROTATION_SPEED = Math.PI/1440;
 const RADIAL_SEGMENTS = 64;
+const ROTATION_SPEED = Math.PI / 180;
 
 var scene, renderer, camera;
 var stereoCamera; 
@@ -111,6 +111,7 @@ function createMobiusStrip() {
     const lengthSegments = 200;
     const positions = [];
     const indices = [];
+	const lightPositions = [];
 
     for (let i = 0; i <= lengthSegments; i++) {
         const theta = (i / lengthSegments) * 2 * Math.PI;
@@ -155,6 +156,17 @@ function createMobiusStrip() {
 
     mobiusStrip.name = 'mobiusStrip';
     scene.add(mobiusStrip);
+
+	for(var i=0; i<8; i++) {
+		lightPositions.push({x:Math.cos(i*Math.PI/4)*radius, y:100, z:Math.sin(i*Math.PI/4)*radius});
+	}
+
+	lightPositions.forEach(pos => {
+        const pointLight = new THREE.PointLight(0x00ff00, 1000, 1000);
+        pointLight.position.set(pos.x, pos.y, pos.z);
+		pointLights.push(pointLight);
+        scene.add(pointLight);
+    });
 }
 
 function addCarouselBase(obj, x, y, z, radius, height) {
@@ -230,7 +242,7 @@ class Carousel extends THREE.Object3D {
 			this.children[ring_number].add(surface);
 			this.surfaces_number[ring_number]++;
 			
-			const spotlight = new THREE.SpotLight(0xffffff, 1, 50, Math.PI/2, 0.8, 0.5);
+			const spotlight = new THREE.SpotLight(0xff0000, 10, 50, Math.PI/2, 0.8, 0.5);
 			spotlight.position.set(
 				Math.cos(angle) * Carousel.RING_WIDTH * (ring_number),
 				Carousel.RING_HEIGHT/2,
@@ -291,7 +303,7 @@ function render() {
 }
 
 function update() {
-	carousel.rotation.y += new Date().getTime()/30000000;
+	carousel.rotation.y += ROTATION_SPEED;
 
 	for(var i=1; i<=Carousel.N_RINGS; i++){
 		if(movToggle[i]){
@@ -305,7 +317,7 @@ function update() {
 			carousel.setRingElevation(i, percentage);
 		}
 		for(var j=0; j<carousel.surfaces_number[i]; j++) {
-			carousel.children[i].children[j*2].rotation.y += new Date().getTime()/10000000;
+			carousel.children[i].children[j*2].rotation.y += ROTATION_SPEED*4;
 		}
 	}
 }
