@@ -9,7 +9,8 @@ import { StereoCamera } from 'three';
 const ROTATION_SPEED = Math.PI/1440;
 const RADIAL_SEGMENTS = 64;
 
-var scene, renderer, camera; 
+var scene, renderer, camera;
+var stereoCamera; 
 var directionalLight, ambientLight;
 
 var carousel;
@@ -21,7 +22,24 @@ var materials = {
     lambert: new THREE.MeshLambertMaterial({ color: 0xFFD0D0 }),
     phong: new THREE.MeshPhongMaterial({ color: 0xFFD0D0, specular: 0x009900, shininess: 30 }),
     toon: new THREE.MeshToonMaterial({ color: 0xFFD0D0 }),
-    normal: new THREE.MeshNormalMaterial()
+    normal: new THREE.MeshNormalMaterial(),
+    basic: new THREE.MeshBasicMaterial({ color: 0xFFD0D0 })
+};
+
+var materialsPieces = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0x90E0EF }),
+    phong: new THREE.MeshPhongMaterial({ color: 0x90E0EF, specular: 0x009900, shininess: 30 }),
+    toon: new THREE.MeshToonMaterial({ color: 0x90E0EF }),
+    normal: new THREE.MeshNormalMaterial(),
+    basic: new THREE.MeshBasicMaterial({ color: 0x90E0EF })
+};
+
+var materialsGround = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0x000000 }),
+    phong: new THREE.MeshPhongMaterial({ color: 0x000000, specular: 0x009900, shininess: 30 }),
+    toon: new THREE.MeshToonMaterial({ color: 0x000000 }),
+    normal: new THREE.MeshNormalMaterial(),
+    basic: new THREE.MeshBasicMaterial({ color: 0x000000 })
 };
 
 var materialsMobious = {
@@ -37,7 +55,13 @@ var materialsMobious = {
         color: 0xADFF2F, 
         side: THREE.DoubleSide
     }),
-    normal: new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
+    normal: new THREE.MeshNormalMaterial({
+        side: THREE.DoubleSide
+    }),
+    basic: new THREE.MeshBasicMaterial({
+        color: 0xADFF2F,
+        side: THREE.DoubleSide
+    })
 };
 
 const map = new THREE.TextureLoader().load('js/poem.jpg');
@@ -62,6 +86,8 @@ var materialsSkydome = {
     normal: new THREE.MeshNormalMaterial({
         bumpMap: bmap,
         bumpScale: 1.3,
+    }),
+    basic: new THREE.MeshBasicMaterial({
         map: map,
     })
 }
@@ -124,7 +150,7 @@ function createMobiusStrip() {
 
     const material = materialsMobious.lambert;
     const mobiusStrip = new THREE.Mesh(geometry, material);
-    mobiusStrip.position.set(0, 60, 0);
+    mobiusStrip.position.set(0, 100, 0);
     mobiusStrip.rotation.x = Math.PI / 2;
 
     mobiusStrip.name = 'mobiusStrip';
@@ -216,6 +242,19 @@ class Carousel extends THREE.Object3D {
 	}
 }
 
+function createGround() {
+    const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+    const groundMaterial = materialsGround.lambert;
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -50;
+    ground.receiveShadow = true;
+
+    ground.name = 'ground';
+    scene.add(ground);
+}
+
+
 function createLighting() {
 	directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 	directionalLight.position.set(300, 1000, 200).normalize();
@@ -232,7 +271,7 @@ function createCamera() {
 	camera.position.set(200, 200, 400);
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    var stereoCamera = new StereoCamera();
+    stereoCamera = new StereoCamera();
     stereoCamera.aspect = 0.5;
 }
 
@@ -267,14 +306,13 @@ function update() {
 }
 
 function animate() {
-    renderer.setAnimationLoop(animate);
     update();
     render();
 }
 
 function updateMaterial(materialType) {
     scene.traverse(function (object) {
-        if (object.isMesh && object.name !== 'skydome' && object.name !== 'mobiusStrip') {
+        if (object.isMesh && object.name !== 'skydome' && object.name !== 'mobiusStrip' && object.name !== 'ground' && object.name !== 'piece') {
             object.material = materials[materialType];
             object.material.needsUpdate = true;
         }
@@ -286,17 +324,16 @@ function updateMaterial(materialType) {
             object.material = materialsSkydome[materialType];
             object.material.needsUpdate = true;
         }
-    });
-}
-
-function toggleLighting() {
-    scene.traverse(function (object) {
-        if (object.isLight) {
-            object.visible = !object.visible;
+        else if (object.name === 'ground') {
+            object.material = materialsGround[materialType];
+            object.material.needsUpdate = true;
+        }
+        else if(object.name === 'piece') {
+            object.material = materialsPieces[materialType];
+            object.material.needsUpdate = true;
         }
     });
 }
-
 
 function onKeyDown(e) {
     e.preventDefault();
@@ -330,7 +367,7 @@ function onKeyDown(e) {
             updateMaterial('normal');
             break;
 		case 't':
-			toggleLighting();
+			updateMaterial('basic');
 			break;
 		case '1':
 			movToggle[1] = !movToggle[1];
@@ -367,6 +404,7 @@ function init() {
 	createCamera();
 	createLighting();
 
+    createGround();
 	createSkydome();
 
 	carousel = new Carousel(0, 0, 0);
@@ -400,7 +438,7 @@ function init() {
 	window.addEventListener("resize", onWindowResize);
 
 	render();
-	animate();
+	renderer.setAnimationLoop(animate);
 }
 
 init();
