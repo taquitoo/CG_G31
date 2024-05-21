@@ -26,6 +26,14 @@ var materials = {
     basic: new THREE.MeshBasicMaterial({ color: 0xFFD0D0 })
 };
 
+var materialsPieces = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0x90E0EF }),
+    phong: new THREE.MeshPhongMaterial({ color: 0x90E0EF, specular: 0x009900, shininess: 30 }),
+    toon: new THREE.MeshToonMaterial({ color: 0x90E0EF }),
+    normal: new THREE.MeshNormalMaterial(),
+    basic: new THREE.MeshBasicMaterial({ color: 0x90E0EF })
+};
+
 var materialsGround = {
     lambert: new THREE.MeshLambertMaterial({ color: 0x000000 }),
     phong: new THREE.MeshPhongMaterial({ color: 0x000000, specular: 0x009900, shininess: 30 }),
@@ -305,7 +313,7 @@ function animate() {
 
 function updateMaterial(materialType) {
     scene.traverse(function (object) {
-        if (object.isMesh && object.name !== 'skydome' && object.name !== 'mobiusStrip' && object.name !== 'ground') {
+        if (object.isMesh && object.name !== 'skydome' && object.name !== 'mobiusStrip' && object.name !== 'ground' && object.name !== 'piece') {
             object.material = materials[materialType];
             object.material.needsUpdate = true;
         }
@@ -319,6 +327,10 @@ function updateMaterial(materialType) {
         }
         else if (object.name === 'ground') {
             object.material = materialsGround[materialType];
+            object.material.needsUpdate = true;
+        }
+        else if(object.name === 'piece') {
+            object.material = materialsPieces[materialType];
             object.material.needsUpdate = true;
         }
     });
