@@ -291,7 +291,7 @@ function render() {
 }
 
 function update() {
-	carousel.rotation.y += ROTATION_SPEED;
+	carousel.rotation.y += new Date().getTime()/30000000;
 
 	for(var i=1; i<=Carousel.N_RINGS; i++){
 		if(movToggle[i]){
@@ -305,7 +305,7 @@ function update() {
 			carousel.setRingElevation(i, percentage);
 		}
 		for(var j=0; j<carousel.surfaces_number[i]; j++) {
-			carousel.children[i].children[j*2].rotation.y += ROTATION_SPEED*4;
+			carousel.children[i].children[j*2].rotation.y += new Date().getTime()/10000000;
 		}
 	}
 }
