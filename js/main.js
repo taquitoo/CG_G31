@@ -240,6 +240,7 @@ class Carousel extends THREE.Object3D {
 				Carousel.RING_HEIGHT/2, 
 				Math.sin(angle) * Carousel.RING_WIDTH * (0.5+ring_number),
 			);
+            surface.name = 'piece';
 			this.children[ring_number].add(surface);
 			this.surfaces_number[ring_number]++;
 			
@@ -531,7 +532,7 @@ function init() {
 	 * */
 	parametricGeometries.forEach (geometry => {
         geometry.scale(2, 2, 2);
-        const piece = new THREE.Mesh(geometry.translate(0, 10, 0), materials.lambert);
+        const piece = new THREE.Mesh(geometry.translate(0, 10, 0), materialsPieces.lambert);
 		carousel.addSurface(1, piece);
 		carousel.addSurface(2, piece);
 		carousel.addSurface(3, piece);
