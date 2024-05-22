@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { StereoCamera } from 'three';
+import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 
 
 'use strict';
@@ -254,6 +255,99 @@ class Carousel extends THREE.Object3D {
 	}
 }
 
+// Superfícies Paramétricas
+function hyperboloid(u, v, target) {
+    const a = 1, b = 1, c = 1;
+    u = u * Math.PI * 2;
+    v = (v - 0.5) * Math.PI;
+    const x = a * Math.sinh(v) * Math.cos(u);
+    const y = b * Math.sinh(v) * Math.sin(u);
+    const z = c * Math.cosh(v);
+    target.set(x, y, z);
+}
+
+function hyperbolicParaboloid(u, v, target) {
+    const a = 1, b = 1;
+    u = (u - 0.5) * 4;
+    v = (v - 0.5) * 4;
+    const x = u;
+    const y = v;
+    const z = (u * u / a / a) - (v * v / b / b);
+    target.set(x, y, z);
+}
+
+function torus(u, v, target) {
+    const R = 3, r = 1;
+    u = u * Math.PI * 2;
+    v = v * Math.PI * 2;
+    const x = (R + r * Math.cos(v)) * Math.cos(u);
+    const y = (R + r * Math.cos(v)) * Math.sin(u);
+    const z = r * Math.sin(v);
+    target.set(x, y, z);
+}
+
+function ellipticParaboloid(u, v, target) {
+    const a = 1, b = 1;
+    u = (u - 0.5) * 4;
+    v = (v - 0.5) * 4;
+    const x = u;
+    const y = v;
+    const z = (x * x / a / a) + (y * y / b / b);
+    target.set(x, y, z);
+}
+
+function helicoid(u, v, target) {
+    const a = 1;
+    u = u * Math.PI * 2;
+    v = v * 4 - 2;
+    const x = v * Math.cos(u);
+    const y = v * Math.sin(u);
+    const z = a * u;
+    target.set(x, y, z);
+}
+
+function cone(u, v, target) {
+    const r = 1;
+    u = u * Math.PI * 2;
+    v = v * r;
+    const x = v * Math.cos(u);
+    const y = v * Math.sin(u);
+    const z = r - v;
+    target.set(x, y, z);
+}
+
+function catenoid(u, v, target) {
+    const a = 1;
+    u = (u - 0.5) * 4;
+    v = v * Math.PI * 2;
+    const x = a * Math.cosh(u) * Math.cos(v);
+    const y = a * Math.cosh(u) * Math.sin(v);
+    const z = u;
+    target.set(x, y, z);
+}
+
+function enneper(u, v, target) {
+    u = (u - 0.5) * 2;
+    v = (v - 0.5) * 2;
+    const x = u - (u * u * u / 3) + u * v * v;
+    const y = v - (v * v * v / 3) + v * u * u;
+    const z = u * u - v * v;
+    target.set(x, y, z);
+}
+
+// Configuração inicial
+const parametricGeometries = [
+    new ParametricGeometry(hyperboloid, 25, 25),
+    new ParametricGeometry(hyperbolicParaboloid, 25, 25),
+    new ParametricGeometry(torus, 25, 25),
+    new ParametricGeometry(ellipticParaboloid, 25, 25),
+    new ParametricGeometry(helicoid, 25, 25),
+    new ParametricGeometry(cone, 25, 25),
+    new ParametricGeometry(catenoid, 25, 25),
+    new ParametricGeometry(enneper, 25, 25)
+];
+
+
 function createGround() {
     const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
     const groundMaterial = materialsGround.lambert;
@@ -317,7 +411,9 @@ function update() {
 			carousel.setRingElevation(i, percentage);
 		}
 		for(var j=0; j<carousel.surfaces_number[i]; j++) {
-			carousel.children[i].children[j*2].rotation.y += ROTATION_SPEED*4;
+            if (j * 2 < carousel.children[i].children.length) {
+			    carousel.children[i].children[j*2].rotation.y += ROTATION_SPEED*4;
+            }
 		}
 	}
 }
@@ -433,11 +529,13 @@ function init() {
 	 * so you have to have the referential of each surface at its bottom,
 	 * otherwise half of the surface will be inside the ring
 	 * */
-	for (var i=1; i<=8; i++) {
-		carousel.addSurface(1, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materials.lambert));
-		carousel.addSurface(2, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materials.lambert));
-		carousel.addSurface(3, new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20).translate(0, 10, 0), materials.lambert));
-	}
+	parametricGeometries.forEach (geometry => {
+        geometry.scale(2, 2, 2);
+        const piece = new THREE.Mesh(geometry.translate(0, 10, 0), materials.lambert);
+		carousel.addSurface(1, piece);
+		carousel.addSurface(2, piece);
+		carousel.addSurface(3, piece);
+	}); 
 
 	createMobiusStrip();
 
