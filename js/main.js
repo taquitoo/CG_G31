@@ -16,6 +16,7 @@ var directionalLight, ambientLight;
 
 var carousel;
 var pointLights = []; 
+var spotLights = [];
 
 var keys = {};
 
@@ -244,7 +245,7 @@ class Carousel extends THREE.Object3D {
 			this.children[ring_number].add(surface);
 			this.surfaces_number[ring_number]++;
 			
-			const spotlight = new THREE.SpotLight(0xff0000, 10, 50, Math.PI/2, 0.8, 0.5);
+			const spotlight = new THREE.SpotLight(0xff0000, 100, 50, Math.PI/2, 0.8, 0.5);
 			spotlight.position.set(
 				Math.cos(angle) * Carousel.RING_WIDTH * (ring_number),
 				Carousel.RING_HEIGHT/2,
@@ -252,6 +253,7 @@ class Carousel extends THREE.Object3D {
 			);
 			spotlight.target = surface;
 			this.children[ring_number].add(spotlight);
+			spotLights.push(spotlight);
 		}
 	}
 }
@@ -457,11 +459,9 @@ function onKeyDown(e) {
             directionalLight.visible = !directionalLight.visible;
             break;
         case 's':
-            for(var i=1; i<=Carousel.N_RINGS; i++) {
-				for(var j=0; j<carousel.surfaces_number[i]; j++) {
-					carousel.children[i].children[j*2+1].visible = !carousel.children[i].children[j*2+1].visible;
-				}
-			}
+			spotLights.forEach(light => {
+				light.visible = !light.visible;
+			});
             break;
         case 'p':
             pointLights.forEach(light => {
@@ -524,12 +524,6 @@ function init() {
 	carousel = new Carousel(0, 0, 0);
     scene.add(carousel);
 
-	/* Example of how to add a surface to the carousel 
-	 * Use it as you need it inside your function to add the various surfaces
-	 * Take into account that the surfaces centroid is added to the floor of the ring,
-	 * so you have to have the referential of each surface at its bottom,
-	 * otherwise half of the surface will be inside the ring
-	 * */
 	parametricGeometries.forEach (geometry => {
         geometry.scale(2, 2, 2);
         const piece = new THREE.Mesh(geometry.translate(0, 10, 0), materialsPieces.lambert);
