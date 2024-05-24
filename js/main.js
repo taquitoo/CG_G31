@@ -96,6 +96,17 @@ var materialsSkydome = {
 /*var counter = [0, Math.PI, 2*Math.PI/3, Math.PI/3];*/
 var movToggle = [false, true, true, true];
 
+const parametricGeometries = [
+    new ParametricGeometry(hyperboloid, 25, 25),
+    new ParametricGeometry(hyperbolicParaboloid, 25, 25),
+    new ParametricGeometry(torus, 25, 25),
+    new ParametricGeometry(lemniscateOfGerono, 25, 25),
+    new ParametricGeometry(helicoid, 25, 25),
+    new ParametricGeometry(cone, 25, 25),
+    new ParametricGeometry(catenoid, 25, 25),
+    new ParametricGeometry(enneper, 25, 25)
+];
+
 function createSkydome() {
 
     const geometry = new THREE.SphereGeometry(500, 32, 32);
@@ -287,13 +298,12 @@ function torus(u, v, target) {
     target.set(x, y, z);
 }
 
-function ellipticParaboloid(u, v, target) {
-    const a = 1, b = 1;
-    u = (u - 0.5) * 4;
-    v = (v - 0.5) * 4;
-    const x = u;
-    const y = v;
-    const z = (x * x / a / a) + (y * y / b / b);
+function lemniscateOfGerono(u, v, target) {
+    u = u * Math.PI * 2;
+    v = (v - 0.5) * 2;    
+    const x = Math.cos(u);
+    const y = Math.sin(u) * Math.cos(u);
+    const z = v;
     target.set(x, y, z);
 }
 
@@ -335,19 +345,6 @@ function enneper(u, v, target) {
     const z = u * u - v * v;
     target.set(x, y, z);
 }
-
-// Configuração inicial
-const parametricGeometries = [
-    new ParametricGeometry(hyperboloid, 25, 25),
-    new ParametricGeometry(hyperbolicParaboloid, 25, 25),
-    new ParametricGeometry(torus, 25, 25),
-    new ParametricGeometry(ellipticParaboloid, 25, 25),
-    new ParametricGeometry(helicoid, 25, 25),
-    new ParametricGeometry(cone, 25, 25),
-    new ParametricGeometry(catenoid, 25, 25),
-    new ParametricGeometry(enneper, 25, 25)
-];
-
 
 function createGround() {
     const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
@@ -513,6 +510,14 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+function getRandomScale() {
+    return Math.random() * 1.5 + 1;
+}
+
+function getRandomRotation() {
+    return Math.random() * Math.PI * 2; 
+}
+
 function init() {
 	createScene();
 	createCamera();
@@ -531,11 +536,15 @@ function init() {
 	 * otherwise half of the surface will be inside the ring
 	 * */
 	parametricGeometries.forEach (geometry => {
-        geometry.scale(2, 2, 2);
-        const piece = new THREE.Mesh(geometry.translate(0, 10, 0), materialsPieces.lambert);
-		carousel.addSurface(1, piece);
-		carousel.addSurface(2, piece);
-		carousel.addSurface(3, piece);
+        for (let i = 1; i <= 3; i++){
+            const geometryClone = geometry.clone();
+            geometryClone.scale(getRandomScale()*i, getRandomScale()*i, getRandomScale()*i);
+            geometryClone.rotateX(getRandomRotation());
+            geometryClone.rotateY(getRandomRotation());
+            geometryClone.rotateZ(getRandomRotation());
+            const piece = new THREE.Mesh(geometryClone.translate(0, 10*i, 0), materialsPieces.lambert);
+            carousel.addSurface(i, piece);
+        }
 	}); 
 
 	createMobiusStrip();
